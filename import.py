@@ -6,7 +6,7 @@ from hashlib import sha256
 connection = sqlite3.connect("nittanybusiness.db")
 cursor = connection.cursor()
 
-print("Importing data into \"nittanybusiness.db\"")
+print("Importing Users.csv data the users table of nittanybusiness.db")
 
 cursor.execute("""
     CREATE TABLE IF NOT EXISTS users (
@@ -18,13 +18,10 @@ cursor.execute("""
 with open("./data/Users.csv", newline='') as f:
     reader = csv.reader(f)
     
-    title = True
+    reader.__next__()  # skip first line containing column titles
     for row in reader:
-        if title:
-            title = False
-            continue
         userID = row[0]
-        passwordHash = sha256(bytes(row[1], "utf-8")).hexdigest()\
+        passwordHash = sha256(bytes(row[1], "utf-8")).hexdigest()
             
         cursor.execute(f"""
             INSERT INTO users VALUES ('{userID}', '{passwordHash}');
