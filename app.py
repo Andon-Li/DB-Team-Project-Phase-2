@@ -14,7 +14,7 @@ cursor = connection.cursor()
 def index():
     if 'username' in session:
         return render_template('index.html')
-    return redirect(url_for('login'))
+    return redirect(url_for('loginpage'))
 
 
 @app.route('/login', methods=['GET', 'POST'])

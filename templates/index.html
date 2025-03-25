@@ -9,7 +9,10 @@
 </head>
 <body>
 <div class="container-sm">
-    <p>Logged In!</p>
+    <h1>Logged In!</h1>
+    <form action="{{ url_for('logout') }}" method="post">
+        <button type="submit" class="btn btn-outline-danger">Log Out</button>
+    </form>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"

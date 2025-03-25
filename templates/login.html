@@ -23,7 +23,10 @@
             </div>
             <button type="submit" href="login" class="btn btn-outline-success">Login</button>
             <a class="btn btn-outline-secondary" href="/signuppage" role="button">Don't have an account?</a>
-
+            <!--For Error Message Handling-->
+            {% if errorMessage %}
+                <p style="color: red;">{{ errorMessage }}</p>
+            {% endif %}
         </form>
     </div>
 
