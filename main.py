@@ -14,7 +14,7 @@ def index():
     if 'email' in session:
         return render_template('index.html')
     else:
-        return redirect(url_for('loginpage'))
+        return redirect(url_for('login_page'))
 
 @app.route("/signuppage")
 def signup_page():
