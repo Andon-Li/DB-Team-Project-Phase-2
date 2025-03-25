@@ -2,6 +2,7 @@ import csv
 from flask import Flask, render_template, session, request, redirect, url_for
 
 import sqlite3
+from hashlib import sha256
 
 app = Flask(__name__)
 app.secret_key = b'cef9080767e2306c'
@@ -26,15 +27,17 @@ def login_page():
 
 
 def valid_user(email, password):
-    with open('./data/Users.csv', mode='r') as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            # debug to check specific user row of matching information
-            #print("Row data:", row)
-            if 'email' in row and 'password' in row:
-                if row['email'] == email and row['password'] == password:
-                    return True
-    return False
+    conn = sqlite3.connect('nittanybusiness.db')
+    cursor = conn.cursor()
+
+    hashed_password = sha256(bytes(password, "utf-8")).hexdigest()
+    result = cursor.execute('''
+        SELECT EXISTS(
+            SELECT 1 FROM users WHERE userID=? AND passwordHash=?
+        );''', (email, hashed_password))
+
+    return result.fetchone()[0] == 1 
+
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
