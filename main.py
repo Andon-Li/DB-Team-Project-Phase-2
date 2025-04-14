@@ -1,6 +1,6 @@
-import csv
 from flask import Flask, render_template, session, request, redirect, url_for
 
+import csv
 import sqlite3
 from hashlib import sha256
 

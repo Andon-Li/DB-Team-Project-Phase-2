@@ -3,38 +3,102 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <title>NittanyBusiness</title>
 </head>
 <body>
-<div class="container-sm">
-    <div class="card-body">
-        <h2 class="card-title">Join NittanyBusiness!</h2>
+    <h1>Join NittanyBusiness!</h1>
 
-        <!-- Form to type in email and password to signup-->
-        <form action="/signup" method="POST">
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="text" name="email" required class="form-control">
-            </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" name="password" required class="form-control">
-            </div>
-            <button type="submit" href="signup" class="btn btn-outline-success">Sign Up</button>
-            <a class="btn btn-outline-secondary" href="/loginpage" role="button">Already have an account?</a>
-        </form>
-    </div>
+    <!-- Form to type in email and password to signup-->
+    <form action="/signup" method="POST">
+        <h3>Login information</h3>
+        <label for="email">Email</label>
+        <input type="text" name="email" required><br>
+    
+        <label for="password">Password</label>
+        <input type="password" name="password" required>
+        <p>
+            Password requirements: <br>
+            1) At least 10 characters. <br>
+            2) At least one lowercase and one uppercase character. <br>
+            3) At least one special character ie:!@#$%^&*
+        </p>
+        
+        <h3>What type of account would you like?</h3>
+        <input type="radio" id="seller" name="account-type" required>
+        <label for="seller">Seller</label><br>
 
-<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
-        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
-        crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
-        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
-        crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
-        crossorigin="anonymous"></script>
+        <input type="radio" id="buyer" name="account-type" required>
+        <label for="buyer">Buyer</label><br><br>
+    
+        <label for="business-name">Business Name</label>
+        <input type="text" name="password" required><br><br>
+    
+        <h3>What is your business address?</h3>
+        <label for="address-street">Street</label>
+        <input type="text" name="address-street" required><br>
+
+        <label for="address-city">City</label>
+        <input type="text" name="address-city" required><br>
+
+        <label for="address-state">State</label>
+        <select name="address-state" required>
+            <option value=alabama>Alabama</option>
+            <option value=alaska>Alaska</option>
+            <option value=arizona>Arizona</option>
+            <option value=arkansas>Arkansas</option>
+            <option value=california>California</option>
+            <option value=colorado>Colorado</option>
+            <option value=connecticut>Connecticut</option>
+            <option value=delaware>Delaware</option>
+            <option value=florida>Florida</option>
+            <option value=georgia>Georgia</option>
+            <option value=hawaii>Hawaii</option>
+            <option value=idaho>Idaho</option>
+            <option value=illinois>Illinois</option>
+            <option value=indiana>Indiana</option>
+            <option value=iowa>Iowa</option>
+            <option value=kansas>Kansas</option>
+            <option value=kentucky>Kentucky</option>
+            <option value=louisiana>Louisiana</option>
+            <option value=maine>Maine</option>
+            <option value=maryland>Maryland</option>
+            <option value=massachusetts>Massachusetts</option>
+            <option value=michigan>Michigan</option>
+            <option value=minnesota>Minnesota</option>
+            <option value=mississippi>Mississippi</option>
+            <option value=missouri>Missouri</option>
+            <option value=montana>Montana</option>
+            <option value=nebraska>Nebraska</option>
+            <option value=nevada>Nevada</option>
+            <option value=new-hampshire>New Hampshire</option>
+            <option value=new-jersey>New Jersey</option>
+            <option value=new-mexico>New Mexico</option>
+            <option value=new-york>New York</option>
+            <option value=north-carolina>North Carolina</option>
+            <option value=north-dakota>North Dakota</option>
+            <option value=ohio>Ohio</option>
+            <option value=oklahoma>Oklahoma</option>
+            <option value=oregon>Oregon</option>
+            <option value=pennsylvania>Pennsylvania</option>
+            <option value=rhode-island>Rhode Island</option>
+            <option value=south-carolina>South Carolina</option>
+            <option value=south-dakota>South Dakota</option>
+            <option value=tennessee>Tennessee</option>
+            <option value=texas>Texas</option>
+            <option value=utah>Utah</option>
+            <option value=vermont>Vermont</option>
+            <option value=virginia>Virginia</option>
+            <option value=washington>Washington</option>
+            <option value=west-virginia>West Virginia</option>
+            <option value=wisconsin>Wisconsin</option>
+            <option value=wyoming>Wyoming</option>
+        </select><br>
+
+        <label for="address-zip">Zipcode</label>
+        <input type="text" name="address-zip" required><br><br>
+        
+        <button type="submit" href="signup">Sign Up</button>
+        <a href="/loginpage" role="button">Already have an account?</a>
+    </form>
 </body>
 </html>
