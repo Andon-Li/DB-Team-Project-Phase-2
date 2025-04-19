@@ -17,9 +17,13 @@ def index():
     else:
         return redirect(url_for('login_page'))
 
-@app.route("/signuppage")
+@app.route("/signuppage", methods=['GET', 'POST'])
 def signup_page():
+    if request.method == 'POST':
+        request.form['email']
+        
     return render_template('signup.html')
+
 
 @app.route("/loginpage")
 def login_page():
@@ -71,3 +75,12 @@ def logout():
         session.pop('email', None)
         print("Logged out")
         return redirect(url_for('login_page'))
+
+
+
+
+@app.route("/error")
+def error():
+    message = request.args.get("message")
+    render_template("error.html", message=message)
+

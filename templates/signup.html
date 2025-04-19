@@ -97,8 +97,13 @@
         <label for="address-zip">Zipcode</label>
         <input type="text" name="address-zip" required><br><br>
         
-        <button type="submit" href="signup">Sign Up</button>
+        <button type="submit" href="signup" onclick="verifyInputs()">Sign Up</button>
         <a href="/loginpage" role="button">Already have an account?</a>
     </form>
+    <script>
+        function verifyInputs() {
+            // Use regex to verify all text inputs.
+        }
+    </script>
 </body>
 </html>
