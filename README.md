@@ -1,7 +1,12 @@
 # DB-Team-Project-Phase-2
-## Project Demonstration / Review : April 28-29 *Tentative*
+## Project Demonstration / Review : April 28
 
 ## Website Outline:
+
+### /base.html
+- Header with title and buttons for search, profile, and logout.
+This template should be the foundation for all other pages.
+
 ### /index
 Redirect immediately to /login or /profile/XXXX based on if the client has an active session.
 
@@ -11,6 +16,7 @@ Redirect immediately to /login or /profile/XXXX based on if the client has an ac
 - Button to /signup for new users.
 
 If email and passwordHash combination does not exist in our db, display error message.
+
 
 ### /signup
 - Fields for all required data points for a user.
@@ -27,6 +33,9 @@ Use JS to check if the password that the user wants to register follows our stre
 Check if the email that the user wants to register with does not exist in our db.
 If the email does not exist and the inputs follow our rules, create the account.
 
+### /profile
+Redirect immediately to the profile of the user.
+/profile/XXXX where XXXX is the id of the user.
 
 ### /profile/XXXX
 - Type of user (Seller, Buyer, HelpDesk)
@@ -54,7 +63,7 @@ If profile is marked as unactive/deleted, redirect to /error.
 - Four fields for search criteria: Listing Title, Seller, Category, Minimum Rating.
 
 These are AND criteria. Only show listings that satisfy all criteria.
-
+Require the user to fill out at least one criteria
 
 ### /search?term=ABCD&seller=ABCD&category=ABCD&rating=1.23
 - 
