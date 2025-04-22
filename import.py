@@ -41,17 +41,3 @@ cursor.execute("""
         activeStatus INTEGER
     );""")
 # activeStatus: 1 is active, 0 is inactive
-
-with open("./data/.csv", newline='') as f:
-    reader = csv.reader(f)
-    
-    reader.__next__()  # skip first line containing column titles
-    for row in reader:
-        userID = row[0]
-        passwordHash = sha256(bytes(row[1], "utf-8")).hexdigest()
-            
-        cursor.execute(f"""
-            INSERT INTO users VALUES ('{userID}', '{passwordHash}');
-        """)
-
-    connection.commit()
