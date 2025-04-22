@@ -6,9 +6,11 @@
 ### /base.html
 - Header with title and buttons for search, profile, and logout.
 This template should be the foundation for all other pages.
+This template has 3 blocks: title, head, and body.
+
 
 ### /index
-Redirect immediately to /login or /profile/XXXX based on if the client has an active session.
+Redirect immediately to /login or /profile based on if the client has an active session.
 
 
 ### /login
