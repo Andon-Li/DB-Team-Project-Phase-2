@@ -152,5 +152,4 @@ with open('./data/Sellers.csv', newline='') as f:
         ''', (email, addresses[addressID][0], addresses[addressID][1], businessName, 1, 
                     '000-000-0000', bankRoutingNum, bankAccountNum, bankBalance))  # No CSNum is provided in csv data.
 
-
 connection.commit()
