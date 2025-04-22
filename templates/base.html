@@ -1,18 +1,53 @@
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="/css/base.css">
     <title>{% block title %}{% endblock %} - NittanyBusiness</title>
+    <style>
+        #navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #333;
+            padding: 1rem 2rem;
+        }
+
+        #navbar {
+            color: white;
+            text-decoration: none;
+            margin-left: 1rem;
+        }
+
+        #navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 1rem;
+        }
+        #navbar a:hover {
+            text-decoration: underline;
+        }
+
+        #logo {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        #nav-links {
+            display: flex;
+        }
+    </style>
+    {% block head %}{% endblock %}
 </head>
 <body>
-    <header>
-        <nav>
-            <a href="/">Nittany business</a>
-            <a href="">search</a>
-            <a href=""></a>
+    <header id="navbar">
+        <div id="logo">Nittany Business</div>
+        <nav id="nav-links">
+            <a href="/search">Search</a>
+            <a href="/profile">My Profile</a>
+            <a href="/logout">Log Out</a>
         </nav>
     </header>
-    <div id="content">
-        {% block content %}{% endblock %}
+    <div id="body">
+        {% block body %}{% endblock %}
     </div>
 </body>
 </html>

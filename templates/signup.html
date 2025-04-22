@@ -1,11 +1,7 @@
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>NittanyBusiness</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}Signup{% endblock %}
+
+{% block body %}
     <h1>Join NittanyBusiness!</h1>
 
     <!-- Form to type in email and password to signup-->
@@ -24,14 +20,20 @@
         </p>
         
         <h3>What type of account would you like?</h3>
-        <input type="radio" id="seller" name="account-type" required>
+        <input type="radio" id="seller" name="account-type" onchange="showCSNum()" value="seller" checked required>
         <label for="seller">Seller</label><br>
 
-        <input type="radio" id="buyer" name="account-type" required>
-        <label for="buyer">Buyer</label><br><br>
+        <input type="radio" id="buyer" name="account-type" onchange="showCSNum()" value="buyer" required>
+        <label for="buyer">Buyer</label><br>
+
+        <input type="radio" id="help-desk" name="account-type" onchange="showCSNum()" value="help-desk" required>
+        <label for="help-desk">Help Desk</label><br><br>
     
         <label for="business-name">Business Name</label>
-        <input type="text" name="password" required><br><br>
+        <input type="text" name="business-name" required><br>
+
+        <label for="CSNum" id="CSNumLabel">Customer Service Number</label>
+        <input type="text" name="CSNum" id="CSNumInput" required><br>
     
         <h3>What is your business address?</h3>
         <label for="address-street">Street</label>
@@ -97,13 +99,27 @@
         <label for="address-zip">Zipcode</label>
         <input type="text" name="address-zip" required><br><br>
         
-        <button type="submit" href="signup" onclick="verifyInputs()">Sign Up</button>
-        <a href="/loginpage" role="button">Already have an account?</a>
+        <button type="submit" href="signup">Sign Up</button>
+        <a href="/login" role="button">Already have an account?</a>
     </form>
+    {% if errorMessage %}
+        <p style="color: red;">{{ errorMessage }}</p>
+    {% endif %}
     <script>
-        function verifyInputs() {
-            // Use regex to verify all text inputs.
+        function showCSNum() {
+            // Run when account type radio input changes. Checks if 'seller' input is checked.
+            //      If it is checked, prompt the user to input their customer service number.
+            //      If not checked, remove prompt and make hidden input not required.
+            if (document.getElementById("seller").checked == false) {
+                document.getElementById("CSNumLabel").style.display = "none";
+                document.getElementById("CSNumInput").style.display = "none";
+                document.getElementById("CSNumInput").required = false;
+            }
+            else {
+                document.getElementById("CSNumLabel").style.display = "inline";
+                document.getElementById("CSNumInput").style.display = "inline";
+                document.getElementById("CSNumInput").required = false;
+            }
         }
     </script>
-</body>
-</html>
+{% endblock %}
