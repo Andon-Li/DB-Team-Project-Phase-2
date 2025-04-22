@@ -1,6 +1,7 @@
 # DB-Team-Project-Phase-2
 ## Project Demonstration / Review : April 28
 
+
 ## Website Outline:
 
 ### /base.html
@@ -106,5 +107,62 @@ Buyer only.
 ### /error
 message parameter will be shown to the user.
 
+## Required Functionalities
+
+### User Login
+/login /logout
+Users who are logged in are tracked using Flask sessions.
 
 
+### Category Hierarchy
+Each listing belongs to a node.
+Each node has a parent.
+The top level node is "root" and does not have a parent.
+
+
+### Product Listing Management
+/edit-listing/XXXX
+
+
+### Order Management
+This rolls into our shopping cart functionality
+
+
+### Product & Seller Review
+
+
+
+### Product Search
+/search
+Users can search for listings by Title, Seller, Category, and Rating.
+
+
+### User Registration
+/signup
+
+
+### User Profile Update
+/edit-profile/XXXX
+
+
+## Grading 100 pts
+### Required Functionality
+1. User Login - 10 pts
+2. Category Hierarchy - 10 pts
+3. Product Listing Management - 10 pts
+4. Order Management - 10 pts
+5. Product & Seller Review - 10 pts
+6. Product Search - 10 pts
+7. User Registration - 10 pts
+8. User Profile Update - 10 pts
+
+### Code submission - 5 pts
+
+### Attendance to Final Submission - 5 pts
+
+### UI Design - 10 pts
+
+### Extra Credit
+1. Shopping Cart - 5 pts
+2. Product Promotion - 5 pts
+3. Helpdesk Support (New Category Requests) - 5 pts
