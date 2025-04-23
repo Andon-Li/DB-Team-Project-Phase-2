@@ -24,6 +24,12 @@ CREATE TABLE IF NOT EXISTS cardInfo (
     securityCode TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS bankInfo (
+    accountNum  TEXT NOT NULL,
+    routingNum  TEXT NOT NULL,
+    balance     INTEGER NOT NULL
+)
+
 CREATE TABLE IF NOT EXISTS zipInfo (
     zipCode TEXT PRIMARY KEY,
     city    TEXT NOT NULL,
@@ -49,9 +55,8 @@ CREATE TABLE IF NOT EXISTS seller (
     businessName    TEXT NOT NULL,
     activeStatus    INTEGER NOT NULL,
     CSNum           TEXT NOT NULL,
-    bankRoutingNum  TEXT NOT NULL,
     bankAccountNum  TEXT NOT NULL,
-    bankBalance     INTEGER NOT NULL,
+    FOREIGN KEY (bankAccountNum) REFERENCES bankInfo(accountNum)
     FOREIGN KEY (email) REFERENCES user(email),
     FOREIGN KEY (zipCode) REFERENCES zipInfo(zipCode)
 );
@@ -120,9 +125,9 @@ with open('./data/Address.csv', newline='') as f:
     for row in reader:
         addressID = row[0]
         zipcode = row[1]
-        street_num = row[2]
-        street_name = row[3]
-        addresses.update({addressID: (f'{street_num} {street_name}', zipcode)})
+        streetNum = row[2]
+        streetName = row[3]
+        addresses.update({addressID: (f'{streetNum} {streetName}', zipcode)})
 
 
 with open('./data/Buyers.csv', newline='') as f:
