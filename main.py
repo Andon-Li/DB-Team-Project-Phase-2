@@ -150,7 +150,7 @@ def query_db(query, args=(), one=False):
 def valid_user(email, password):
     hashed_password = sha256(bytes(password, 'utf-8')).hexdigest()
     if query_db('''
-                SELECT 1 FROM users WHERE email=? AND passwordHash=?;
+                SELECT 1 FROM user WHERE email=? AND passwordHash=?;
                 ''', (email, hashed_password), one=True):
         return True
     return False
