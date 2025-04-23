@@ -20,30 +20,27 @@
         </p>
         
         <h3>What type of account would you like?</h3>
-        <input type="radio" id="seller" name="account_type" onchange="showCSNum()" value="seller" checked required>
+        <input type="radio" id="sellerType" name="accountType" value="seller" checked required>
         <label for="seller">Seller</label><br>
 
-        <input type="radio" id="buyer" name="account_type" onchange="showCSNum()" value="buyer" required>
+        <input type="radio" id="buyerType" name="accountType" value="buyer" required>
         <label for="buyer">Buyer</label><br>
 
-        <input type="radio" id="help_desk" name="account_type" onchange="showCSNum()" value="help_desk" required>
-        <label for="help_desk">Help Desk</label><br><br>
+        <input type="radio" id="helpDeskType" name="accountType" value="helpDesk" required>
+        <label for="helpDesk">Help Desk</label><br><br>
     
-        <label for="business_name">Business Name</label>
-        <input type="text" name="business_name" required><br>
+        <label for="businessName">Business Name</label>
+        <input type="text" name="businessName" required><br>
 
-        <label for="CSNum" id="CSNumLabel">Customer Service Number</label>
-        <input type="text" name="CS_num" id="CSNumInput" required><br>
-    
         <h3>What is your business address?</h3>
-        <label for="address_street">Street</label>
-        <input type="text" name="address_street" required><br>
+        <label for="addressStreet">Street</label>
+        <input type="text" name="addressStreet" required><br>
 
-        <label for="address_city">City</label>
-        <input type="text" name="address_city" required><br>
+        <label for="addressCity">City</label>
+        <input type="text" name="addressCity" required><br>
 
-        <label for="address_state">State</label>
-        <select name="address_state" required>
+        <label for="addressState">State</label>
+        <select name="addressState" required>
             <option value=AL>Alabama</option>
             <option value=AK>Alaska</option>
             <option value=AZ>Arizona</option>
@@ -96,30 +93,124 @@
             <option value=WY>Wyoming</option>
         </select><br>
 
-        <label for="address_zip">Zipcode</label>
-        <input type="text" name="address_zip" required><br><br>
+        <label for="addressZip">Zipcode</label>
+        <input type="text" name="addressZip" required><br><br>
+
+
+        <!-- Required fields for sellers -->
+        <div id="sellerFields">
+            <label for="CSNum">Customer Service Number</label>
+            <input type="text" name="CSNum" id="CSNumInput" required><br><br>
+    
+            <label for="bankAccountNum">Bank Acccount Number</label>
+            <input type="text" name="bankAccountNum" required><br>
+    
+            <label for="bankRoutingNum">Bank Routing Number</label>
+            <input type="text" name="bankRoutingNum" required><br>
+    
+            <label for="bankBalance">Bank Balance</label>
+            <input type="text" name="bankBalance" required><br><br>
+        </div>
+
+
+        <!-- Required fields for buyers -->
+        <div id="buyerFields">
+            <label for="cardNumber">Card Number</label>
+            <input type="text" name="cardNumber" required><br>
+
+            <label for="cardType">Card Type</label>
+            <select name="cardType" required>
+                <option value="Master">Master</option>
+                <option value="Discover">Discover</option>
+                <option value="American Express">American Express</option>
+                <option value="Visa">Visa</option>
+            </select><br>
+
+            <label for="cardExpDate">Expiration Date</label>
+            <select name="cardExpDate">
+                <option value="01">01</option>
+                <option value="02">02</option>
+                <option value="03">03</option>
+                <option value="04">04</option>
+                <option value="05">05</option>
+                <option value="06">06</option>
+                <option value="07">07</option>
+                <option value="08">08</option>
+                <option value="09">09</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+            </select>
+            -
+            <select name="cardExpDate">
+                <option value="2025">2025</option>
+                <option value="2026">2026</option>
+                <option value="2027">2027</option>
+                <option value="2028">2028</option>
+                <option value="2029">2029</option>
+                <option value="2030">2030</option>
+                <option value="2031">2031</option>
+                <option value="2032">2032</option>
+                <option value="2033">2033</option>
+                <option value="2034">2034</option>
+                <option value="2035">2035</option>
+                <option value="2036">2036</option>
+                <option value="2037">2037</option>
+                <option value="2038">2038</option>
+                <option value="2039">2039</option>
+            </select><br>
+
+            <label for="cardSecurityCode">Security Code</label>
+            <input type="text" name="cardSecurityCode" required><br><br>
+        </div>
+
+
+        <!-- Required fields for helpDesk -->
+        <div id="helpDeskFields">
+            <label for="position" class="helpDeskField">Postion</label>
+            <input type="text" name="position" class="helpDeskField" required><br><br>
+        </div>
+
         
         <button type="submit" href="signup">Sign Up</button>
         <a href="/login" role="button">Already have an account?</a>
     </form>
+
     {% if errorMessage %}
         <p style="color: red;">{{ errorMessage }}</p>
     {% endif %}
+
     <script>
-        function showCSNum() {
-                // Run when account type radio input changes. Checks if 'seller' input is checked.
-                // If it is checked, prompt the user to input their customer service number.
-                // If not checked, remove prompt and make hidden input not required.
-            if (document.getElementById("seller").checked == false) {
-                document.getElementById("CSNumLabel").style.display = "none";
-                document.getElementById("CSNumInput").style.display = "none";
-                document.getElementById("CSNumInput").required = false;
+
+        window.onload = function() {
+            showNeededFields();
+        }
+
+        document.querySelector('form').addEventListener('change', function() {
+            showNeededFields();
+        });
+
+        function showNeededFields() {
+            // Check which account type is selected and show only the input fields required for that type.
+            if (document.getElementById("sellerType").checked) {
+                document.getElementById("sellerFields").style.display = "inline";
+                document.getElementById("buyerFields").style.display = "none";
+                document.getElementById("helpDeskFields").style.display = "none";
+
             }
-            else {
-                document.getElementById("CSNumLabel").style.display = "inline";
-                document.getElementById("CSNumInput").style.display = "inline";
-                document.getElementById("CSNumInput").required = false;
+            else if (document.getElementById("buyerType").checked) {
+                document.getElementById("sellerFields").style.display = "none";
+                document.getElementById("buyerFields").style.display = "inline";
+                document.getElementById("helpDeskFields").style.display = "none";
+
+            } 
+            else if (document.getElementById("helpDeskType").checked) {
+                document.getElementById("sellerFields").style.display = "none";
+                document.getElementById("buyerFields").style.display = "none";
+                document.getElementById("helpDeskFields").style.display = "inline";
+
             }
         }
+
     </script>
 {% endblock %}
