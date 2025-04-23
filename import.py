@@ -2,7 +2,10 @@ import sqlite3
 import csv
 from hashlib import sha256
 
-cur.executescript('''
+connection = sqlite3.connect('nittanybusiness.db')
+cursor = connection.cursor()
+
+cursor.executescript('''
 CREATE TABLE IF NOT EXISTS user (
     email           TEXT PRIMARY KEY,
     passwordHash    TEXT NOT NULL
@@ -17,7 +20,7 @@ CREATE TABLE IF NOT EXISTS helpDesk (
 CREATE TABLE IF NOT EXISTS cardInfo (
     number  TEXT PRIMARY KEY,
     type    TEXT NOT NULL,
-    expDate TEXT NOT NULL
+    expDate TEXT NOT NULL,
     securityCode TEXT NOT NULL
 );
 
@@ -50,7 +53,6 @@ CREATE TABLE IF NOT EXISTS seller (
     bankAccountNum  TEXT NOT NULL,
     bankBalance     INTEGER NOT NULL,
     FOREIGN KEY (email) REFERENCES user(email),
-    FOREIGN KEY (cardNumber) REFERENCES cardInfo(number),
     FOREIGN KEY (zipCode) REFERENCES zipInfo(zipCode)
 );
 ''')
