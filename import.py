@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS seller (
     zipCode     TEXT NOT NULL,
     businessName    TEXT NOT NULL,
     activeStatus    INTEGER NOT NULL,
-    CSNum           TEXT NOT NULL,
+    csNum           TEXT NOT NULL,
     bankAccountNum  TEXT NOT NULL,
     FOREIGN KEY (bankAccountNum) REFERENCES bankInfo(accountNum)
     FOREIGN KEY (email) REFERENCES user(email),

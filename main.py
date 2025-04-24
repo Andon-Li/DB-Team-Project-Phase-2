@@ -28,10 +28,12 @@ def signup():
         return render_template('signup.html')
     assert(request.method == 'POST')
 
-    # Check that all inputs are valid.
-    existing_user, invalid_fields = verify_inputs(request.form)
+    inputs = request.form
 
-    if existing_user or invalid_fields:
+    # Check that all inputs are valid.
+    is_existing_user, invalid_fields = verify_inputs(inputs)
+
+    if is_existing_user or invalid_fields:
         return render_template('signup.html', existingUser=existing_user, invalidFields=invalid_fields)
     
     # After this point, all inputs are valid.
@@ -39,8 +41,29 @@ def signup():
     match account_type:
         case 'seller':
             query_db('''
-                    INSERT INTO seller VALUES (?, ?, ?, ?, )
-            ''')
+                INSERT INTO seller VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', (inputs['email'], inputs['addressStreet'], inputs['addressZip'], 
+                    inputs['businessName'], 1, inputs['csNum'], inputs['bankAccountNum']))
+            
+            query_db('''
+                INSERT INTO bankInfo VALUES (?, ?, ?)
+            ''', (inputs['bankAccountNum'], inputs['bankRoutingNum'], inputs['bankBalance']))
+        
+        case 'buyer':
+            query_db('''
+                INSERT INTO buyer VALUES (?, ?, ?, ?, ?, ?)
+            ''', (inputs['email'], inputs['addressStreet'], inputs['addressZip'], 
+                    inputs['businessName'], 1, inputs['cardNumber']))
+            
+            query_db('''
+                INSERT INTO cardInfo VALUES (?, ?, ?, ?)
+            ''', (inputs['cardNumber'], inputs['cardType'], inputs['cardExpDate'], 
+                    inputs['cardSecurityCode']))
+
+        case 'helpDesk':
+            query_db('''
+                INSERT INTO helpDesk VALUES (?, ?)
+            ''', (inputs['email'], inputs['Position']))
 
     return redirect(url_for('login'))
 
@@ -51,42 +74,42 @@ def verify_inputs(inputs):
     if query_db('''
             SELECT 1 FROM users WHERE email=?;
             ''', (inputs['email'],), one=True):
-        existing_user = True
+        is_existing_user = True
     else:
-        existing_user = False
+        is_existing_user = False
 
-    if not re.fullmatch('([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+', inputs['email']):
+    if not re.fullmatch('([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(.[A-Z|a-z]{2,})+', inputs['email']):
         invalid_fields.append('Email')
     
     if not re.fullmatch('^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.*[0-9]).{8,60}$', inputs['password']):
         invalid_fields.append('Password')
 
-    match inputs['accountType']
-    case 'seller':
-        if not re.fullmatch('^[0-9]{3,6}$', inputs['addressZip']):
-            invalid_fields.append('Zip Code')
+    match inputs['accountType']:
+        case 'seller':
+            if not re.fullmatch('^[0-9]{3,6}$', inputs['addressZip']):
+                invalid_fields.append('Zip Code')
 
-        if not re.fullmatch('^[0-9]{10}$', inputs['csNum']):
-            invalid_fields.append('Customer Service Number')
+            if not re.fullmatch('^[0-9]{10}$', inputs['csNum']):
+                invalid_fields.append('Customer Service Number')
 
-        if not re.fullmatch('^[0-9]{8}$', inputs['bankAccountNum']):
-            invalid_fields.append('Bank Account Number')
+            if not re.fullmatch('^[0-9]{8}$', inputs['bankAccountNum']):
+                invalid_fields.append('Bank Account Number')
 
-        if not re.fullmatch('^[0-9]{9}$', inputs['bankRoutingNumber']):
-            invalid_fields.append('Bank Routing Number')
+            if not re.fullmatch('^[0-9]{9}$', inputs['bankRoutingNumber']):
+                invalid_fields.append('Bank Routing Number')
 
-        if not re.fullmatch('^[0-9]+$', inputs['bankBalance']):
-            invalid_fields.append('Bank Balance')
+            if not re.fullmatch('^[0-9]+$', inputs['bankBalance']):
+                invalid_fields.append('Bank Balance')
 
-    case 'buyer':
-        if not re.fullmatch('^[0-9]{3,6}$', inputs['addressZip']):
-            invalid_fields.append('Zip Code')
+        case 'buyer':
+            if not re.fullmatch('^[0-9]{3,6}$', inputs['addressZip']):
+                invalid_fields.append('Zip Code')
 
-        if not re.fullmatch('^[0-9]{16}$', inputs['cardNumber']):
-            invalid_fields.append('Card Number')
+            if not re.fullmatch('^[0-9]{16}$', inputs['cardNumber']):
+                invalid_fields.append('Card Number')
 
-        if not re.fullmatch('^[0-9]{2,4}$', inputs['cardSecurityCode']):
-            invalid_fields.append('Card Security Code')
+            if not re.fullmatch('^[0-9]{2,4}$', inputs['cardSecurityCode']):
+                invalid_fields.append('Card Security Code')
     
     return existing_user, invalid_fields
 
