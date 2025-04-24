@@ -27,44 +27,68 @@ def signup():
         return render_template('signup.html')
     assert(request.method == 'POST')
 
-    # Pull out data from request.form
-    email = request.form['email']
-    password = request.form['password']
-    account_type = request.form['account_type']  # seller, buyer, help_desk
-    business_name = request.form['business_name']
-    CS_num = request.form['CS_num']
-    address_state = request.form['address_state']
-    address_zip = request.form['address_zip']
+    # Check that all inputs are valid.
+    existing_user, invalid_fields = verify_inputs(request.form)
 
-    # Check if email is already registered. If not, display error message.
-    if query_db('''
-                SELECT 1 FROM users WHERE email=?;
-                ''', (email,), one=True):
-        return render_template('signup.html', error_message='This email has already been registered.')
-
-    invalid_fields=[]
-    error_message = 'Input(s) for '
-
-    # Check that email and password are valid. If not, display error message.
-    if not re.fullmatch('([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+', email):
-        invalid_fields.append('email')
+    if existing_user or invalid_fields:
+        return render_template('signup.html', existingUser=existing_user, invalidFields=invalid_fields)
     
-    if not re.fullmatch('^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.*[0-9]).{8,60}$', password):
-        invalid_fields.append('password')
-
-    for field_name in invalid_fields:
-        error_message += field_name + ' '
-
-    error_message += 'have errors.'
-
-    if invalid_fields:
-        return render_template('signup.html', errorMessage=error_message)
-    
-    # At this point, all inputs are valid.
+    # After this point, all inputs are valid.
     # TODO: Insert data into database.
-
+    match account_type:
+        case 'seller':
+            query_db('''
+                    INSERT INTO seller VALUES (?, ?, ?, ?, )
+            ''')
 
     return redirect(url_for('login'))
+
+def verify_inputs(inputs):
+
+    invalid_fields = []
+
+    if query_db('''
+            SELECT 1 FROM users WHERE email=?;
+            ''', (inputs['email'],), one=True):
+        existing_user = True
+    else:
+        existing_user = False
+
+    if not re.fullmatch('([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+', inputs['email']):
+        invalid_fields.append('Email')
+    
+    if not re.fullmatch('^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.*[0-9]).{8,60}$', inputs['password']):
+        invalid_fields.append('Password')
+
+    match inputs['accountType']
+    case 'seller':
+        if not re.fullmatch('^[0-9]{3,6}$', inputs['addressZip']):
+            invalid_fields.append('Zip Code')
+
+        if not re.fullmatch('^[0-9]{10}$', inputs['csNum']):
+            invalid_fields.append('Customer Service Number')
+
+        if not re.fullmatch('^[0-9]{8}$', inputs['bankAccountNum']):
+            invalid_fields.append('Bank Account Number')
+
+        if not re.fullmatch('^[0-9]{9}$', inputs['bankRoutingNumber']):
+            invalid_fields.append('Bank Routing Number')
+
+        if not re.fullmatch('^[0-9]+$', inputs['bankBalance']):
+            invalid_fields.append('Bank Balance')
+
+    case 'buyer':
+        if not re.fullmatch('^[0-9]{3,6}$', inputs['addressZip']):
+            invalid_fields.append('Zip Code')
+
+        if not re.fullmatch('^[0-9]{16}$', inputs['cardNumber']):
+            invalid_fields.append('Card Number')
+
+        if not re.fullmatch('^[0-9]{2,4}$', inputs['cardSecurityCode']):
+            invalid_fields.append('Card Security Code')
+    
+    return existing_user, invalid_fields
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -93,6 +117,14 @@ def login():
         error_message = 'Incorrect email or password'
         print(error_message)
         return render_template('login.html', errorMessage=error_message)
+
+def valid_user(email, password):
+    hashed_password = sha256(bytes(password, 'utf-8')).hexdigest()
+    if query_db('''
+                SELECT 1 FROM user WHERE email=? AND passwordHash=?;
+                ''', (email, hashed_password), one=True):
+        return True
+    return False
 
 
 @app.route('/logout', methods=['POST', 'GET'])
@@ -125,6 +157,8 @@ def error():
     return render_template('error.html', errorMessage=request.args.get('errorMessage'))
 
 
+
+# Helper functions for simpler DB querying
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
@@ -145,12 +179,3 @@ def query_db(query, args=(), one=False):
     rv = cur.fetchall()
     cur.close()
     return (rv[0] if rv else None) if one else rv
-
-
-def valid_user(email, password):
-    hashed_password = sha256(bytes(password, 'utf-8')).hexdigest()
-    if query_db('''
-                SELECT 1 FROM user WHERE email=? AND passwordHash=?;
-                ''', (email, hashed_password), one=True):
-        return True
-    return False

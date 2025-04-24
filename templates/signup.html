@@ -29,6 +29,7 @@
         <input type='radio' id='helpDeskType' name='accountType' value='helpDesk' required>
         <label for='helpDesk'>Help Desk</label><br><br>
 
+        <!-- Required fields for sellers and buyers -->
         <div id="notHelpDeskFields">
             <label for='businessName'>Business Name</label>
             <input type='text' name='businessName' required><br>
@@ -94,15 +95,15 @@
                 <option value=WY>Wyoming</option>
             </select><br>
 
-            <label for='addressZip'>Zipcode</label>
+            <label for='addressZip'>Zip Code</label>
             <input type='text' name='addressZip' required><br><br>
         </div>
 
 
         <!-- Required fields for sellers -->
         <div id='sellerFields'>
-            <label for='CSNum'>Customer Service Number</label>
-            <input type='text' name='CSNum' id='CSNumInput' required><br><br>
+            <label for='csNum'>Customer Service Number</label>
+            <input type='text' name='csNum' required><br><br>
     
             <label for='bankAccountNum'>Bank Acccount Number</label>
             <input type='text' name='bankAccountNum' required><br>
@@ -178,8 +179,12 @@
         <a href='/login' role='button'>Already have an account?</a>
     </form>
 
-    {% if errorMessage %}
-        <p style='color: red;'>{{ errorMessage }}</p>
+    {% if existingUser %}
+        <p style='color: red;'>This email has already been registered.</p>
+    {% endif %}
+
+    {% for field in invalidFields %}
+        <p>Error in {{ field }} field.</p>
     {% endif %}
 
     <script>
