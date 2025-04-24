@@ -136,8 +136,8 @@
                 <option value='Visa'>Visa</option>
             </select><br>
 
-            <label for='cardExpDate'>Expiration Date</label>
-            <select name='cardExpDate' id='cardExpDateMonth'>
+            <label for='cardExpMonth'>Expiration Date</label>
+            <select name='cardExpMonth'>
                 <option value='01'>01</option>
                 <option value='02'>02</option>
                 <option value='03'>03</option>
@@ -152,7 +152,7 @@
                 <option value='12'>12</option>
             </select>
             -
-            <select name='cardExpDate' id='cardExpDateMonth'>
+            <select name='cardExpYear'>
                 <option value='2025'>2025</option>
                 <option value='2026'>2026</option>
                 <option value='2027'>2027</option>
@@ -192,7 +192,7 @@
     {% endif %}
 
     {% for field in invalidFields %}
-        <p>Error in {{ field }} field.</p>
+        <p style='color: red;'>Error in {{ field }} field.</p>
     {% endfor %}
 
     <script>

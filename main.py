@@ -35,7 +35,7 @@ def signup():
         return render_template('signup.html', existingUser=is_existing_user, invalidFields=invalid_fields)
     
     # After this point, all inputs are valid.
-    # TODO: Insert data into database.
+    
     passwordHash = sha256(bytes(inputs['password'], 'utf-8')).hexdigest()
     query_db('''
                 INSERT INTO user VALUES (?, ?);
@@ -71,8 +71,12 @@ def signup():
             query_db('''
                 INSERT INTO cardInfo VALUES (?, ?, ?, ?);
             ''', (f'{cN[:4]}-{cN[4:8]}-{cN[8:12]}-{cN[12:]}', inputs['cardType'], 
-                    f'{inputs['cardExpDateMonth']}-{inputs['cardExpDateYear']}', 
+                    f'{inputs['cardExpMonth']}-{inputs['cardExpYear']}', 
                     inputs['cardSecurityCode']), commit=True)
+
+            query_db('''
+                INSERT INTO zipInfo VALUES (?, ?, ?)
+            ''', (inputs['addressZip'], inputs['addressCity'], inputs['addressState']), commit=True)
 
         case 'helpDesk':
             query_db('''
