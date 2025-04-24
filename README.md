@@ -46,7 +46,7 @@ Redirect immediately to the profile of the user.
 - If is seller profile, display link that searches for items sold by them.
 - If client is at their own profile, display link to /edit-profile/XXXX.
 
-If profile is marked as unactive/deleted, redirect to /error.
+If profile is marked as inactive/deleted, redirect to /error.
 
 
 ### /edit-profile/ABCD
@@ -59,7 +59,7 @@ Empty fields are assumed to mean "Do not change"
 
 HelpDesk users have the unique ability to change some data points. Only show fields to change those data points to HelpDesk users.
 
-If profile is marked as unactive/deleted, redirect to /error.
+If profile is marked as inactive/deleted, redirect to /error.
 
 
 ### /search

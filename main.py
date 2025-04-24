@@ -5,6 +5,7 @@ import sqlite3
 from hashlib import sha256
 import re
 
+from numpy import error_message
 
 app = Flask(__name__)
 app.secret_key = b'cef9080767e2306c'
@@ -135,6 +136,13 @@ def logout():
         print('Logged out')
     return redirect(url_for('login'))
 
+
+@app.route('/search')
+def search():
+    '''if 'email' not in session:
+        return redirect(url_for('login'))
+    else:'''
+    return render_template('search.html')
 
 @app.route('/profile')
 def anon_profile():
