@@ -32,36 +32,52 @@ def signup():
     is_existing_user, invalid_fields = verify_inputs(inputs)
 
     if is_existing_user or invalid_fields:
-        return render_template('signup.html', existingUser=existing_user, invalidFields=invalid_fields)
+        return render_template('signup.html', existingUser=is_existing_user, invalidFields=invalid_fields)
     
     # After this point, all inputs are valid.
     # TODO: Insert data into database.
-    match account_type:
+    passwordHash = sha256(bytes(inputs['password'], 'utf-8')).hexdigest()
+    query_db('''
+                INSERT INTO user VALUES (?, ?);
+            ''', (inputs['email'], passwordHash), commit=True)
+
+    match inputs['accountType']:
         case 'seller':
+            csN = inputs['csNum']
+
             query_db('''
-                INSERT INTO seller VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO seller VALUES (?, ?, ?, ?, ?, ?, ?);
             ''', (inputs['email'], inputs['addressStreet'], inputs['addressZip'], 
-                    inputs['businessName'], 1, inputs['csNum'], inputs['bankAccountNum']))
+                    inputs['businessName'], 1, f'{csN[:3]}-{csN[3:6]}-{csN[6:]}', inputs['bankAccountNum']), commit=True)
+
+            query_db('''
+                INSERT INTO zipInfo VALUES (?, ?, ?)
+            ''', (inputs['addressZip'], inputs['addressCity'], inputs['addressState']), commit=True)
+
+            bRN = inputs['bankRoutingNum']
             
             query_db('''
-                INSERT INTO bankInfo VALUES (?, ?, ?)
-            ''', (inputs['bankAccountNum'], inputs['bankRoutingNum'], inputs['bankBalance']))
+                INSERT INTO bankInfo VALUES (?, ?, ?);
+            ''', (inputs['bankAccountNum'], f'{bRN[:4]}-{bRN[4:8]}-{bRN[8]}', inputs['bankBalance']), commit=True)
         
         case 'buyer':
+            cN = inputs['cardNum']
+
             query_db('''
-                INSERT INTO buyer VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO buyer VALUES (?, ?, ?, ?, ?, ?);
             ''', (inputs['email'], inputs['addressStreet'], inputs['addressZip'], 
-                    inputs['businessName'], 1, inputs['cardNumber']))
+                    inputs['businessName'], 1, f'{cN[:4]}-{cN[4:8]}-{cN[8:12]}-{cN[12:]}'), commit=True)
             
             query_db('''
-                INSERT INTO cardInfo VALUES (?, ?, ?, ?)
-            ''', (inputs['cardNumber'], inputs['cardType'], inputs['cardExpDate'], 
-                    inputs['cardSecurityCode']))
+                INSERT INTO cardInfo VALUES (?, ?, ?, ?);
+            ''', (f'{cN[:4]}-{cN[4:8]}-{cN[8:12]}-{cN[12:]}', inputs['cardType'], 
+                    f'{inputs['cardExpDateMonth']}-{inputs['cardExpDateYear']}', 
+                    inputs['cardSecurityCode']), commit=True)
 
         case 'helpDesk':
             query_db('''
-                INSERT INTO helpDesk VALUES (?, ?)
-            ''', (inputs['email'], inputs['Position']))
+                INSERT INTO helpDesk VALUES (?, ?);
+            ''', (inputs['email'], inputs['Position']), commit=True)
 
     return redirect(url_for('login'))
 
@@ -70,7 +86,7 @@ def verify_inputs(inputs):
     invalid_fields = []
 
     if query_db('''
-            SELECT 1 FROM users WHERE email=?;
+            SELECT 1 FROM user WHERE email=?;
             ''', (inputs['email'],), one=True):
         is_existing_user = True
     else:
@@ -93,7 +109,7 @@ def verify_inputs(inputs):
             if not re.fullmatch('^[0-9]{8}$', inputs['bankAccountNum']):
                 invalid_fields.append('Bank Account Number')
 
-            if not re.fullmatch('^[0-9]{9}$', inputs['bankRoutingNumber']):
+            if not re.fullmatch('^[0-9]{9}$', inputs['bankRoutingNum']):
                 invalid_fields.append('Bank Routing Number')
 
             if not re.fullmatch('^[0-9]+$', inputs['bankBalance']):
@@ -103,13 +119,13 @@ def verify_inputs(inputs):
             if not re.fullmatch('^[0-9]{3,6}$', inputs['addressZip']):
                 invalid_fields.append('Zip Code')
 
-            if not re.fullmatch('^[0-9]{16}$', inputs['cardNumber']):
+            if not re.fullmatch('^[0-9]{16}$', inputs['cardNum']):
                 invalid_fields.append('Card Number')
 
             if not re.fullmatch('^[0-9]{2,4}$', inputs['cardSecurityCode']):
                 invalid_fields.append('Card Security Code')
     
-    return existing_user, invalid_fields
+    return is_existing_user, invalid_fields
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -203,8 +219,11 @@ def close_connection(exception):
         db.close()
 
 
-def query_db(query, args=(), one=False):
-    cur = get_db().execute(query, args)
+def query_db(query, args=(), one=False, commit=False):
+    db = get_db()
+    cur = db.execute(query, args)
+    if commit:
+        db.commit()
     rv = cur.fetchall()
     cur.close()
     return (rv[0] if rv else None) if one else rv

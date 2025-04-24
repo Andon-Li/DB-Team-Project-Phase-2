@@ -42,9 +42,9 @@ CREATE TABLE IF NOT EXISTS buyer (
     zipCode     TEXT NOT NULL,
     businessName    TEXT NOT NULL,
     activeStatus    INTEGER NOT NULL,
-    cardNumber      TEXT NOT NULL,
+    cardNum      TEXT NOT NULL,
     FOREIGN KEY (email) REFERENCES user(email),
-    FOREIGN KEY (cardNumber) REFERENCES cardInfo(number),
+    FOREIGN KEY (cardNum) REFERENCES cardInfo(number),
     FOREIGN KEY (zipCode) REFERENCES zipInfo(zipCode)
 );
 

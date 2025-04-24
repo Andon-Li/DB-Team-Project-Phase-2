@@ -96,30 +96,37 @@
             </select><br>
 
             <label for='addressZip'>Zip Code</label>
-            <input type='text' name='addressZip' required><br><br>
+            <input type='text' name='addressZip' required>
+            <span>-- Between 3 and 5 digits</span><br>
+
         </div>
 
 
         <!-- Required fields for sellers -->
         <div id='sellerFields'>
             <label for='csNum'>Customer Service Number</label>
-            <input type='text' name='csNum' required><br><br>
+            <input type='text' name='csNum' required>
+            <span>-- Exactly 10 digits</span><br>
     
             <label for='bankAccountNum'>Bank Acccount Number</label>
-            <input type='text' name='bankAccountNum' required><br>
+            <input type='text' name='bankAccountNum' required>
+            <span>-- Exactly 8 digits</span><br>
     
             <label for='bankRoutingNum'>Bank Routing Number</label>
-            <input type='text' name='bankRoutingNum' required><br>
+            <input type='text' name='bankRoutingNum' required>
+            <span>-- Exactly 9 digits</span><br>
     
             <label for='bankBalance'>Bank Balance</label>
-            <input type='text' name='bankBalance' required><br><br>
+            <input type='text' name='bankBalance' required>
+            <span>-- Only digits</span><br><br>
         </div>
 
 
         <!-- Required fields for buyers -->
         <div id='buyerFields'>
-            <label for='cardNumber'>Card Number</label>
-            <input type='text' name='cardNumber' required><br>
+            <label for='cardNum'>Card Number</label>
+            <input type='text' name='cardNum' required>
+            <span>-- Exactly 16 digits</span><br>
 
             <label for='cardType'>Card Type</label>
             <select name='cardType' required>
@@ -130,7 +137,7 @@
             </select><br>
 
             <label for='cardExpDate'>Expiration Date</label>
-            <select name='cardExpDate'>
+            <select name='cardExpDate' id='cardExpDateMonth'>
                 <option value='01'>01</option>
                 <option value='02'>02</option>
                 <option value='03'>03</option>
@@ -145,7 +152,7 @@
                 <option value='12'>12</option>
             </select>
             -
-            <select name='cardExpDate'>
+            <select name='cardExpDate' id='cardExpDateMonth'>
                 <option value='2025'>2025</option>
                 <option value='2026'>2026</option>
                 <option value='2027'>2027</option>
@@ -164,7 +171,8 @@
             </select><br>
 
             <label for='cardSecurityCode'>Security Code</label>
-            <input type='text' name='cardSecurityCode' required><br><br>
+            <input type='text' name='cardSecurityCode' required>
+            <span>-- Between 3 and 4 digits</span><br><br>
         </div>
 
 
