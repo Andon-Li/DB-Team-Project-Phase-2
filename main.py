@@ -5,8 +5,6 @@ import sqlite3
 from hashlib import sha256
 import re
 
-from numpy import error_message
-
 app = Flask(__name__)
 app.secret_key = b'cef9080767e2306c'
 
