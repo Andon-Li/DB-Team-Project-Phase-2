@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS bankInfo (
     accountNum  TEXT NOT NULL,
     routingNum  TEXT NOT NULL,
     balance     INTEGER NOT NULL
-)
+);
 
 CREATE TABLE IF NOT EXISTS zipInfo (
     zipCode TEXT PRIMARY KEY,
@@ -64,99 +64,97 @@ CREATE TABLE IF NOT EXISTS seller (
 
 
 with open('./data/Users.csv', newline='') as f:
-    reader = csv.reader(f)
-    reader.__next__()  # skip first line containing column titles
+    # email,password
+
+    reader = csv.DictReader(f)
+    reader.fieldnames[0] = reader.fieldnames[0].lstrip('\ufeff')
 
     for row in reader:
-        email = row[0]
-        passwordHash = sha256(bytes(row[1], 'utf-8')).hexdigest()
+        passwordHash = sha256(bytes(row['password'], 'utf-8')).hexdigest()
             
         cursor.execute('''
             INSERT INTO user VALUES (?, ?);
-        ''', (email, passwordHash))
+        ''', (row['email'], passwordHash))
 
 
 with open('./data/Zipcode_Info.csv', newline='') as f:
-    reader = csv.reader(f)
-    reader.__next__()  # skip first line containing column titles
+    # zipcode,city,state
+
+    reader = csv.DictReader(f)
+    reader.fieldnames[0] = reader.fieldnames[0].lstrip('\ufeff')
 
     for row in reader:
-        zipcode = row[0]
-        city = row[1]
-        state = row[2]
         cursor.execute('''
             INSERT INTO zipInfo VALUES (?, ?, ?);
-        ''', (zipcode, city, state))
+        ''', (row['zipcode'], row['city'], row['state']))
 
 
 with open('./data/Helpdesk.csv', newline='') as f:
-    reader = csv.reader(f)
-    reader.__next__()  # skip first line containing column titles
+    # email,Position
+
+    reader = csv.DictReader(f)
+    reader.fieldnames[0] = reader.fieldnames[0].lstrip('\ufeff')
 
     for row in reader:
-        email = row[0]
-        position = row[1]
         cursor.execute('''
             INSERT INTO helpDesk VALUES (?, ?);
-        ''', (email, position))
+        ''', (row['email'], row['Position']))
 
 
 cards = {}
 with open('./data/Credit_Cards.csv', newline='') as f:
-    reader = csv.reader(f)
-    reader.__next__()  # skip first line containing column titles
+    # credit_card_num,card_type,expire_month,expire_year,security_code,Owner_email
+
+    reader = csv.DictReader(f)
+    reader.fieldnames[0] = reader.fieldnames[0].lstrip('\ufeff')
 
     for row in reader:
-        number = row[0]
-        cardType = row[1].strip()
-        expDate = f'{row[2].zfill(2)}-{row[3]}'
-        securityCode = row[4]
-        cards.update({row[5]: number})
+        expDate = f'{row['expire_month'].zfill(2)}-{row['expire_year']}'
+        cards.update({row['Owner_email']: row['credit_card_num']})
         cursor.execute('''
             INSERT INTO cardInfo VALUES (?, ?, ?, ?);
-        ''', (number, cardType, expDate, securityCode))
+        ''', (row['credit_card_num'], row['card_type'].strip(), expDate, row['security_code']))
 
 
 addresses = {}
 with open('./data/Address.csv', newline='') as f:
-    reader = csv.reader(f)
-    reader.__next__()  # skip first line containing column titles
+    # address_id,zipcode,street_num,street_name
+
+    reader = csv.DictReader(f)
+    reader.fieldnames[0] = reader.fieldnames[0].lstrip('\ufeff')
 
     for row in reader:
-        addressID = row[0]
-        zipcode = row[1]
-        streetNum = row[2]
-        streetName = row[3]
-        addresses.update({addressID: (f'{streetNum} {streetName}', zipcode)})
+        addresses.update({row['address_id']: 
+                        (f'{row['street_num']} {row['street_name']}', row['zipcode'])})
 
 
 with open('./data/Buyers.csv', newline='') as f:
-    reader = csv.reader(f)
-    reader.__next__()  # skip first line containing column titles
+    # email,business_name,buyer_address_id
+
+    reader = csv.DictReader(f)
+    reader.fieldnames[0] = reader.fieldnames[0].lstrip('\ufeff')
 
     for row in reader:
-        email = row[0]
-        businessName = row[1]
-        addressID = row[2]
         cursor.execute('''
             INSERT INTO buyer VALUES (?, ?, ?, ?, ?, ?)
-        ''', (email, addresses[addressID][0], addresses[addressID][1], businessName, 1, cards[email]))
+        ''', (row['email'], addresses[row['buyer_address_id']][0], addresses[row['buyer_address_id']][1], 
+                row['business_name'], 1, cards[row['email']]))
 
 
 with open('./data/Sellers.csv', newline='') as f:
-    reader = csv.reader(f)
-    reader.__next__()  # skip first line containing column titles
+    # email,business_name,Business_Address_ID,bank_routing_number,bank_account_number,balance
+    
+    reader = csv.DictReader(f)
+    reader.fieldnames[0] = reader.fieldnames[0].lstrip('\ufeff')
 
     for row in reader:
-        email = row[0]
-        businessName = row[1]
-        addressID = row[2]
-        bankRoutingNum = row[3]
-        bankAccountNum = row[4]
-        bankBalance = row[5]
         cursor.execute('''
-            INSERT INTO seller VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (email, addresses[addressID][0], addresses[addressID][1], businessName, 1, 
-                    '000-000-0000', bankRoutingNum, bankAccountNum, bankBalance))  # No CSNum is provided in csv data.
+            INSERT INTO seller VALUES (?, ?, ?, ?, ?, ?, ?)
+        ''', (row['email'], addresses[row['Business_Address_ID']][0], addresses[row['Business_Address_ID']][1], 
+                row['business_name'], 1, '000-000-0000', row['bank_account_number']))
+        
+        cursor.execute('''
+            INSERT INTO bankInfo VALUES (?, ?, ?)
+        ''', (row['bank_account_number'], row['bank_routing_number'], row['balance']))
 
 connection.commit()
