@@ -2,265 +2,326 @@
 {% block title %}Signup{% endblock %}
 
 {% block body %}
-    <h1>Join NittanyBusiness!</h1>
+<div class="container-sm">
+    <div class="card-body">
+        <h2 class="card-title">Join NittanyBusiness!</h2>
 
-    <!-- Form to type in email and password to signup-->
-    <form action='/signup' method='POST'>
-        <h3>Login information</h3>
-        <label for='email'>Email</label>
-        <input type='text' name='email' required><br>
-    
-        <label for='password'>Password</label>
-        <input type='password' name='password' required>
-        <p>
-            Password requirements: <br>
-            1) Between 10 and 60 characters. <br>
-            2) At least one lowercase and one uppercase character. <br>
-            3) At least one special character ie:!@#$%^&*
-        </p>
-        
-        <h3>What type of account would you like?</h3>
-        <input type='radio' id='sellerType' name='accountType' value='seller' checked required>
-        <label for='seller'>Seller</label><br>
+        <form action="/signup" method="POST">
 
-        <input type='radio' id='buyerType' name='accountType' value='buyer' required>
-        <label for='buyer'>Buyer</label><br>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="text" name="email" required class="form-control">
+            </div>
 
-        <input type='radio' id='helpDeskType' name='accountType' value='helpDesk' required>
-        <label for='helpDesk'>Help Desk</label><br><br>
-
-        <!-- Required fields for sellers and buyers -->
-        <div id="notHelpDeskFields">
-            <label for='businessName'>Business Name</label>
-            <input type='text' name='businessName' required><br>
-
-            <h3>What is your business address?</h3>
-            <label for='addressStreet'>Street</label>
-            <input type='text' name='addressStreet' required><br>
-
-            <label for='addressCity'>City</label>
-            <input type='text' name='addressCity' required><br>
-
-            <label for='addressState'>State</label>
-            <select name='addressState' required>
-                <option value=AL>Alabama</option>
-                <option value=AK>Alaska</option>
-                <option value=AZ>Arizona</option>
-                <option value=AR>Arkansas</option>
-                <option value=CA>California</option>
-                <option value=CO>Colorado</option>
-                <option value=CT>Connecticut</option>
-                <option value=DE>Delaware</option>
-                <option value=FL>Florida</option>
-                <option value=GA>Georgia</option>
-                <option value=HI>Hawaii</option>
-                <option value=ID>Idaho</option>
-                <option value=IL>Illinois</option>
-                <option value=IN>Indiana</option>
-                <option value=IA>Iowa</option>
-                <option value=KS>Kansas</option>
-                <option value=KY>Kentucky</option>
-                <option value=LA>Louisiana</option>
-                <option value=ME>Maine</option>
-                <option value=MD>Maryland</option>
-                <option value=MA>Massachusetts</option>
-                <option value=MI>Michigan</option>
-                <option value=MN>Minnesota</option>
-                <option value=MS>Mississippi</option>
-                <option value=MS>Missouri</option>
-                <option value=MO>Montana</option>
-                <option value=NE>Nebraska</option>
-                <option value=NV>Nevada</option>
-                <option value=NH>New Hampshire</option>
-                <option value=NJ>New Jersey</option>
-                <option value=NM>New Mexico</option>
-                <option value=NY>New York</option>
-                <option value=NC>North Carolina</option>
-                <option value=ND>North Dakota</option>
-                <option value=OH>Ohio</option>
-                <option value=OK>Oklahoma</option>
-                <option value=OR>Oregon</option>
-                <option value=PA>Pennsylvania</option>
-                <option value=RI>Rhode Island</option>
-                <option value=SC>South Carolina</option>
-                <option value=SD>South Dakota</option>
-                <option value=TN>Tennessee</option>
-                <option value=TX>Texas</option>
-                <option value=UT>Utah</option>
-                <option value=VT>Vermont</option>
-                <option value=VA>Virginia</option>
-                <option value=WA>Washington</option>
-                <option value=WV>West Virginia</option>
-                <option value=WI>Wisconsin</option>
-                <option value=WY>Wyoming</option>
-            </select><br>
-
-            <label for='addressZip'>Zip Code</label>
-            <input type='text' name='addressZip' required>
-            <span>-- Between 3 and 5 digits</span><br>
-
-        </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" name="password" required class="form-control">
+                <small class="form-text text-muted">
+                    • 10-60 characters<br>
+                    • At least one lowercase and one uppercase character<br>
+                    • At least one special character (e.g., !@#$%^&*)
+                </small>
+            </div>
 
 
-        <!-- Required fields for sellers -->
-        <div id='sellerFields'>
-            <label for='csNum'>Customer Service Number</label>
-            <input type='text' name='csNum' required>
-            <span>-- Exactly 10 digits</span><br>
-    
-            <label for='bankAccountNum'>Bank Acccount Number</label>
-            <input type='text' name='bankAccountNum' required>
-            <span>-- Exactly 8 digits</span><br>
-    
-            <label for='bankRoutingNum'>Bank Routing Number</label>
-            <input type='text' name='bankRoutingNum' required>
-            <span>-- Exactly 9 digits</span><br>
-    
-            <label for='bankBalance'>Bank Balance</label>
-            <input type='text' name='bankBalance' required>
-            <span>-- Only digits</span><br><br>
-        </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" id="sellerType" name="accountType" value="seller" required>
+                <label class="form-check-label" for="sellerType">Seller</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" id="buyerType" name="accountType" value="buyer" required>
+                <label class="form-check-label" for="buyerType">Buyer</label>
+            </div>
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="radio" id="helpDeskType" name="accountType" value="helpDesk" required>
+                <label class="form-check-label" for="helpDeskType">Help Desk</label>
+            </div>
 
 
-        <!-- Required fields for buyers -->
-        <div id='buyerFields'>
-            <label for='cardNum'>Card Number</label>
-            <input type='text' name='cardNum' required>
-            <span>-- Exactly 16 digits</span><br>
+            <div id="notHelpDeskFields">
+                <div class="form-group">
+                    <label for="businessName">Business Name</label>
+                    <input type="text" name="businessName" required class="form-control">
+                </div>
 
-            <label for='cardType'>Card Type</label>
-            <select name='cardType' required>
-                <option value='Master'>Master</option>
-                <option value='Discover'>Discover</option>
-                <option value='American Express'>American Express</option>
-                <option value='Visa'>Visa</option>
-            </select><br>
+                <div class="form-group">
+                    <label for="addressStreet">Street</label>
+                    <input type="text" name="addressStreet" required class="form-control">
+                </div>
 
-            <label for='cardExpMonth'>Expiration Date</label>
-            <select name='cardExpMonth'>
-                <option value='01'>01</option>
-                <option value='02'>02</option>
-                <option value='03'>03</option>
-                <option value='04'>04</option>
-                <option value='05'>05</option>
-                <option value='06'>06</option>
-                <option value='07'>07</option>
-                <option value='08'>08</option>
-                <option value='09'>09</option>
-                <option value='10'>10</option>
-                <option value='11'>11</option>
-                <option value='12'>12</option>
-            </select>
-            -
-            <select name='cardExpYear'>
-                <option value='2025'>2025</option>
-                <option value='2026'>2026</option>
-                <option value='2027'>2027</option>
-                <option value='2028'>2028</option>
-                <option value='2029'>2029</option>
-                <option value='2030'>2030</option>
-                <option value='2031'>2031</option>
-                <option value='2032'>2032</option>
-                <option value='2033'>2033</option>
-                <option value='2034'>2034</option>
-                <option value='2035'>2035</option>
-                <option value='2036'>2036</option>
-                <option value='2037'>2037</option>
-                <option value='2038'>2038</option>
-                <option value='2039'>2039</option>
-            </select><br>
+                <div class="form-group">
+                    <label for="addressCity">City</label>
+                    <input type="text" name="addressCity" required class="form-control">
+                </div>
 
-            <label for='cardSecurityCode'>Security Code</label>
-            <input type='text' name='cardSecurityCode' required>
-            <span>-- Between 3 and 4 digits</span><br><br>
-        </div>
+                <div class="form-group">
+                    <label for="addressState">State</label>
+                    <select name="addressState" required class="form-control">
+                        <option value=AL>Alabama</option>
+                        <option value=AK>Alaska</option>
+                        <option value=AZ>Arizona</option>
+                        <option value=AR>Arkansas</option>
+                        <option value=CA>California</option>
+                        <option value=CO>Colorado</option>
+                        <option value=CT>Connecticut</option>
+                        <option value=DE>Delaware</option>
+                        <option value=FL>Florida</option>
+                        <option value=GA>Georgia</option>
+                        <option value=HI>Hawaii</option>
+                        <option value=ID>Idaho</option>
+                        <option value=IL>Illinois</option>
+                        <option value=IN>Indiana</option>
+                        <option value=IA>Iowa</option>
+                        <option value=KS>Kansas</option>
+                        <option value=KY>Kentucky</option>
+                        <option value=LA>Louisiana</option>
+                        <option value=ME>Maine</option>
+                        <option value=MD>Maryland</option>
+                        <option value=MA>Massachusetts</option>
+                        <option value=MI>Michigan</option>
+                        <option value=MN>Minnesota</option>
+                        <option value=MS>Mississippi</option>
+                        <option value=MO>Missouri</option>
+                        <option value=MT>Montana</option>
+                        <option value=NE>Nebraska</option>
+                        <option value=NV>Nevada</option>
+                        <option value=NH>New Hampshire</option>
+                        <option value=NJ>New Jersey</option>
+                        <option value=NM>New Mexico</option>
+                        <option value=NY>New York</option>
+                        <option value=NC>North Carolina</option>
+                        <option value=ND>North Dakota</option>
+                        <option value=OH>Ohio</option>
+                        <option value=OK>Oklahoma</option>
+                        <option value=OR>Oregon</option>
+                        <option value=PA>Pennsylvania</option>
+                        <option value=RI>Rhode Island</option>
+                        <option value=SC>South Carolina</option>
+                        <option value=SD>South Dakota</option>
+                        <option value=TN>Tennessee</option>
+                        <option value=TX>Texas</option>
+                        <option value=UT>Utah</option>
+                        <option value=VT>Vermont</option>
+                        <option value=VA>Virginia</option>
+                        <option value=WA>Washington</option>
+                        <option value=WV>West Virginia</option>
+                        <option value=WI>Wisconsin</option>
+                        <option value=WY>Wyoming</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="addressZip">Zip Code</label>
+                    <input type="text" name="addressZip" required class="form-control">
+                    <small class="form-text text-muted">• 4-5 digits</small>
+                </div>
+            </div>
 
 
-        <!-- Required fields for helpDesk -->
-        <div id='helpDeskFields'>
-            <label for='position' class='helpDeskField'>Job Postion</label>
-            <input type='text' name='position' class='helpDeskField' required><br><br>
-        </div>
+            <div id="sellerFields">
+                <div class="form-group">
+                    <label for="csNum">Customer Service Number</label>
+                    <input type="text" name="csNum" required class="form-control">
+                    <small class="form-text text-muted">• 10 digits</small>
+                </div>
+                <div class="form-group">
+                    <label for="bankAccountNum">Bank Account Number</label>
+                    <input type="text" name="bankAccountNum" required class="form-control">
+                    <small class="form-text text-muted">• 8 digits</small>
+                </div>
+                <div class="form-group">
+                    <label for="bankRoutingNum">Bank Routing Number</label>
+                    <input type="text" name="bankRoutingNum" required class="form-control">
+                    <small class="form-text text-muted">• 9 digits</small>
+                </div>
+                <div class="form-group">
+                    <label for="bankBalance">Bank Balance</label>
+                    <input type="text" name="bankBalance" required class="form-control">
+                    <small class="form-text text-muted">• Digits only</small>
+                </div>
+            </div>
 
-        
-        <button type='submit' href='signup'>Sign Up</button>
-        <a href='/login' role='button'>Already have an account?</a>
-    </form>
 
-    {% if existingUser %}
-        <p style='color: red;'>This email has already been registered.</p>
-    {% endif %}
+            <div id="buyerFields">
+                <div class="form-group">
+                    <label for="cardNum">Card Number</label>
+                    <input type="text" name="cardNum" required class="form-control">
+                    <small class="form-text text-muted">• 16 digits</small>
+                </div>
+                <div class="form-group">
+                    <label for="cardType">Card Type</label>
+                    <select name="cardType" required class="form-control">
+                        <option value="Master">Master</option>
+                        <option value="Discover">Discover</option>
+                        <option value="American Express">American Express</option>
+                        <option value="Visa">Visa</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="cardExpDate">Expiration Date</label>
+                    <div class="form-row">
+                        <div class="col">
+                            <select name="cardExpMonth" class="form-control">
+                                <option value='01'>01</option>
+                                <option value='02'>02</option>
+                                <option value='03'>03</option>
+                                <option value='04'>04</option>
+                                <option value='05'>05</option>
+                                <option value='06'>06</option>
+                                <option value='07'>07</option>
+                                <option value='08'>08</option>
+                                <option value='09'>09</option>
+                                <option value='10'>10</option>
+                                <option value='11'>11</option>
+                                <option value='12'>12</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <select name="cardExpYear" class="form-control">
+                                <option value='2025'>2025</option>
+                                <option value='2026'>2026</option>
+                                <option value='2027'>2027</option>
+                                <option value='2028'>2028</option>
+                                <option value='2029'>2029</option>
+                                <option value='2030'>2030</option>
+                                <option value='2031'>2031</option>
+                                <option value='2032'>2032</option>
+                                <option value='2033'>2033</option>
+                                <option value='2034'>2034</option>
+                                <option value='2035'>2035</option>
+                                <option value='2036'>2036</option>
+                                <option value='2037'>2037</option>
+                                <option value='2038'>2038</option>
+                                <option value='2039'>2039</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="cardSecurityCode">Security Code</label>
+                    <input type="text" name="cardSecurityCode" required class="form-control">
+                    <small class="form-text text-muted">• 3-4 digits</small>
+                </div>
+            </div>
 
-    {% for field in invalidFields %}
-        <p style='color: red;'>Error in {{ field }} field.</p>
-    {% endfor %}
 
-    <script>
+            <div id="helpDeskFields">
+                <div class="form-group">
+                    <label for="position">Job Position</label>
+                    <input type="text" name="position" class="form-control" required>
+                </div>
+            </div>
 
-        window.onload = function() {
-            showNeededFields();
+
+            <button type="submit" class="btn btn-outline-primary">Sign Up</button>
+            <a href="login" class="btn btn-outline-secondary" role="button">Already have an account?</a>
+
+            {% if nonUniqueFields %}
+                <p class="text-danger mt-3">
+                    These fields are already registered:{% for field in nonUniqueFields %} {{field}}{% endfor %}
+                </p>
+            {% endif %}
+
+            {% if malformedFields %}
+                <p class="text-danger mt-3">
+                    These fields are not formatted correctly:{% for field in malformedFields %} {{field}}{% endfor %}
+                </p>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+
+<script>
+    window.onload = function () {
+        showNeededFields();
+    }
+
+    document.querySelector('form').addEventListener('change', function () {
+        showNeededFields();
+    });
+
+    function showNeededFields() {
+        if (document.getElementById('sellerType').checked) {
+            document.getElementById('sellerFields').style.display = 'block';
+            document.getElementById('buyerFields').style.display = 'none';
+            document.getElementById('helpDeskFields').style.display = 'none';
+
+            document.getElementById('notHelpDeskFields').style.display = 'block';
+
+            document.querySelectorAll("#sellerFields input").forEach(e => {
+                e.disabled = false
+            });
+            document.querySelectorAll("#buyerFields input").forEach(e => {
+                e.disabled = true
+            });
+            document.querySelectorAll("#helpDeskFields input").forEach(e => {
+                e.disabled = true
+            });
+            document.querySelectorAll("#notHelpDeskFields input").forEach(e => {
+                e.disabled = false
+            });
+
+        } else if (document.getElementById('buyerType').checked) {
+            document.getElementById('sellerFields').style.display = 'none';
+            document.getElementById('buyerFields').style.display = 'block';
+            document.getElementById('helpDeskFields').style.display = 'none';
+
+            document.getElementById('notHelpDeskFields').style.display = 'block';
+
+            document.querySelectorAll("#sellerFields input").forEach(e => {
+                e.disabled = true
+            });
+            document.querySelectorAll("#buyerFields input").forEach(e => {
+                e.disabled = false
+            });
+            document.querySelectorAll("#helpDeskFields input").forEach(e => {
+                e.disabled = true
+            });
+            document.querySelectorAll("#notHelpDeskFields input").forEach(e => {
+                e.disabled = false
+            });
+
+        } else if (document.getElementById('helpDeskType').checked) {
+            document.getElementById('sellerFields').style.display = 'none';
+            document.getElementById('buyerFields').style.display = 'none';
+            document.getElementById('helpDeskFields').style.display = 'block';
+
+            document.getElementById('notHelpDeskFields').style.display = 'none';
+
+            document.querySelectorAll("#sellerFields input").forEach(e => {
+                e.disabled = true
+            });
+            document.querySelectorAll("#buyerFields input").forEach(e => {
+                e.disabled = true
+            });
+            document.querySelectorAll("#helpDeskFields input").forEach(e => {
+                e.disabled = false
+            });
+            document.querySelectorAll("#notHelpDeskFields input").forEach(e => {
+                e.disabled = true
+            });
+        } else {
+            document.getElementById('sellerFields').style.display = 'none';
+            document.getElementById('buyerFields').style.display = 'none';
+            document.getElementById('helpDeskFields').style.display = 'none';
+
+            document.getElementById('notHelpDeskFields').style.display = 'none';
+
+            document.querySelectorAll("#sellerFields input").forEach(e => {
+                e.disabled = true
+            });
+            document.querySelectorAll("#buyerFields input").forEach(e => {
+                e.disabled = true
+            });
+            document.querySelectorAll("#helpDeskFields input").forEach(e => {
+                e.disabled = true
+            });
+            document.querySelectorAll("#notHelpDeskFields input").forEach(e => {
+                e.disabled = true
+            });
         }
+    }
+</script>
 
-        document.querySelector('form').addEventListener('change', function() {
-            showNeededFields();
-        });
-
-        function showNeededFields() {
-            // Check which account type is selected and show only the input fields required for that type.
-            if (document.getElementById('sellerType').checked) {
-                document.getElementById('sellerFields').style.display = 'inline';
-                document.getElementById('buyerFields').style.display = 'none';
-                document.getElementById('helpDeskFields').style.display = 'none';
-
-                document.getElementById('notHelpDeskFields').style.display = 'inline';
-
-                document.getElementById('sellerFields').querySelectorAll('input').forEach(input => {
-                    input.required = true;
-                });
-                document.getElementById('buyerFields').querySelectorAll('input').forEach(input => {
-                    input.required = false;
-                });
-                document.getElementById('helpDeskFields').querySelectorAll('input').forEach(input => {
-                    input.required = false;
-                });
-
-            }
-            if (document.getElementById('buyerType').checked) {
-                document.getElementById('sellerFields').style.display = 'none';
-                document.getElementById('buyerFields').style.display = 'inline';
-                document.getElementById('helpDeskFields').style.display = 'none';
-
-                document.getElementById('notHelpDeskFields').style.display = 'inline';
-
-                document.getElementById('sellerFields').querySelectorAll('input').forEach(input => {
-                    input.required = false;
-                });
-                document.getElementById('buyerFields').querySelectorAll('input').forEach(input => {
-                    input.required = true;
-                });
-                document.getElementById('helpDeskFields').querySelectorAll('input').forEach(input => {
-                    input.required = false;
-                });
-
-            } 
-            if (document.getElementById('helpDeskType').checked) {
-                document.getElementById('sellerFields').style.display = 'none';
-                document.getElementById('buyerFields').style.display = 'none';
-                document.getElementById('helpDeskFields').style.display = 'inline';
-
-                document.getElementById('notHelpDeskFields').style.display = 'none';
-
-                document.getElementById('sellerFields').querySelectorAll('input').forEach(input => {
-                    input.required = false;
-                });
-                document.getElementById('buyerFields').querySelectorAll('input').forEach(input => {
-                    input.required = false;
-                });
-                document.getElementById('helpDeskFields').querySelectorAll('input').forEach(input => {
-                    input.required = true;
-                });
-            }
-        }
-
-    </script>
 {% endblock %}
