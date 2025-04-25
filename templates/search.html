@@ -1,25 +1,196 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <title>NittanyBusiness</title>
+  <meta charset="UTF-8">
+  <title>NittanyBusiness</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link
+    rel="stylesheet"
+    href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+    crossorigin="anonymous"
+  >
+  <style>
+      .menu, .dropdown-menu {
+          list-style: none;
+          margin: 0;
+          padding: 0;
+      }
+
+      .menu-item {
+          position: relative;
+          background-color: #f8f9fa;
+          padding: 10px 15px;
+          cursor: pointer;
+          border: 1px solid #ccc;
+          white-space: nowrap;
+      }
+
+      .dropdown-toggle {
+          padding: 10px 15px;
+          background-color: #f8f9fa;
+          border: 1px solid #ccc;
+          cursor: pointer;
+          white-space: nowrap;
+      }
+
+      .dropdown-toggle:hover {
+          background-color: #e9ecef;
+      }
+
+      .menu-item:hover {
+          background-color: #e9ecef;
+      }
+
+      .dropdown-menu {
+          display: none;
+          position: absolute;
+          top: 0;
+          left: 100%;
+          z-index: 10;
+          min-width: 200px;
+      }
+
+      .main-dropdown {
+          display: none;
+          position: absolute;
+          top: 100%;
+          left: 0;
+          z-index: 10;
+          min-width: 200px;
+      }
+
+      .menu-item:hover > .dropdown-menu {
+          display: block;
+      }
+
+      .category-dropdown {
+          position: relative;
+          display: inline-block;
+      }
+
+      .menu-item:hover > .dropdown-menu {
+          display: block;
+      }
+
+      .category-dropdown {
+          position: relative;
+          display: inline-block;
+      }
+
+      .search-form {
+          display: flex;
+          gap: 1rem;
+          align-items: center;
+          margin-top: 1rem;
+      }
+
+      .search-input {
+          flex: 1;
+          padding: 0.5rem;
+          font-size: 1rem;
+          border: 1px solid #ccc;
+      }
+
+      .search-button {
+          padding: 0.5rem 1rem;
+          background-color: #007bff;
+          color: #fff;
+          border: none;
+          cursor: pointer;
+          border-radius: 5px;
+      }
+
+      .search-button:hover {
+          background-color: #007bff;
+      }
+  </style>
 </head>
 <body>
-<div class="container-sm">
-    <h1>Search</h1>
+<div class="container mt-4">
+    <h3>Search in NittanyBusiness</h3>
+
+    <form class="search-form" action="/search-results" method="GET">
+        <div class="category-dropdown">
+            <div class="dropdown-toggle" id="dropdownMenuButton">Select Category</div>
+            <ul class="main-dropdown" id="category-menu"></ul>
+        </div>
+
+        <input type="text" class="search-input" name="query" placeholder="Search keywords...">
+
+        <button type="submit" class="search-button">🔍</button>
+    </form>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
-        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
-        crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
-        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
-        crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
-        crossorigin="anonymous"></script>
+<script>
+    // might change to create helper function bc of overlapping logic for createMenu and on DOMContentLoaded
+
+    // create a function to create submenus for the nested menu items recursively
+    function createMenu(tree){
+        // create a new ul element for the dropdown
+        const ul = document.createElement('ul');
+        ul.classList.add("dropdown-menu");
+
+        // loop iteratively through each key in the category tree
+        for (const key in tree){
+            // create a new li element for this category
+            const li = document.createElement('li');
+            li.className = "menu-item";
+            li.textContent = key;
+
+            // if this category has children then we should create their menu recursively as well
+            if (Object.keys(tree[key]).length > 0){
+                const childMenu = createMenu(tree[key]);
+                li.appendChild(childMenu);
+            }
+
+            // add the li to the overhanging ul
+            ul.appendChild(li);
+        }
+        // return unordered list when done
+        return ul;
+    }
+
+    // When the webpage loads this event will call
+    document.addEventListener('DOMContentLoaded', () => {
+        // get the category tree data from flask (use tojson for dict)
+        const categoryTree = {{ category_tree | tojson }};
+        const topMenu = document.getElementById("category-menu");
+        const dropdownToggle = document.getElementById("dropdownMenuButton");
+
+        // toggle the main dropdown upon the button being clicked
+        dropdownToggle.addEventListener('click', function() {
+            topMenu.style.display = topMenu.style.display === 'block' ? 'none' : 'block';
+        });
+
+        // handle edge case to close the dropdown menu if the user clicks outside the dropdown
+        document.addEventListener('click', function(outsideEvent) {
+            if (!outsideEvent.target.closest('.category-dropdown')) {
+                topMenu.style.display = 'none';
+            }
+        });
+
+        // create the main ul container
+        const ul = document.createElement('ul');
+        ul.className = "menu";
+
+        // add each top level category
+        for (const key in categoryTree){
+            const li = document.createElement('li');
+            li.className = "menu-item";
+            li.textContent = key;
+
+            // if the category has its own children then create that submenu
+            if (Object.keys(categoryTree[key]).length > 0){
+                // will call this recursively for each child (the length of the object)
+                const childMenu = createMenu(categoryTree[key]);
+                li.appendChild(childMenu);
+            }
+            ul.appendChild(li);
+        }
+
+        // add the complete menu to our webpage
+        topMenu.appendChild(ul);
+    });
+</script>
 </body>
 </html>

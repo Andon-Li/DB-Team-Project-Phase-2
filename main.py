@@ -178,12 +178,56 @@ def logout():
     return redirect(url_for('login'))
 
 
+# helper function to read the categories for creation of tree
+def read_categories(filepath):
+    categories = []
+    # open the csv and read every line from Categories.csv
+    with open(filepath, newline='') as csvfile:
+        reader = csv.DictReader(csvfile)
+        reader.fieldnames = [field.strip() for field in reader.fieldnames]
+
+        for row in reader:
+            # append each category name and parent category to the dictionary so we can create a tree with this returned data
+            categories.append(
+                dict(category_name=row['category_name'].strip(), parent_category=row['parent_category'].strip()))
+    return categories
+
+# function to create the category tree hierarchy
+def make_tree(categories, parent="Root"):
+    tree = {}
+    # iterate through the categories
+    for row in categories:
+        # if one of the rows in the parent_category is a parent then set the child category and recursively go through the tree
+        # first iteration will be "Root", second will be first parent found, etc
+        if row["parent_category"] == parent:
+            category = row['category_name']
+            tree[category] = make_tree(categories, parent=category)
+
+    # return the tree
+    return tree
+
 @app.route('/search')
 def search():
-    '''if 'email' not in session:
-        return redirect(url_for('login'))
-    else:'''
-    return render_template('search.html')
+    # implement this when signup is complete
+    #if 'email' not in session:
+    #    return redirect(url_for('login'))
+    #else:
+
+    # read the categories from the csv and make the tree based off of it
+    categories = read_categories('data/Categories.csv')
+    category_tree = make_tree(categories)
+    # debug to see if the category tree is correct
+    print("Category Tree:", category_tree)
+
+    return render_template('search.html', category_tree=category_tree)
+
+
+@app.route('/search-results')
+def search_results():
+    category = request.args.get('category')
+    query = request.args.get('query')
+
+    return f"Search results for '{query}' in category '{category}'"
 
 @app.route('/profile')
 def anon_profile():
