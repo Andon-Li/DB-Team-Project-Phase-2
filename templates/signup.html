@@ -233,9 +233,7 @@
 
 
 <script>
-    window.onload = function () {
-        showNeededFields();
-    }
+    document.addEventListener("DOMContentLoaded", showNeededFields());
 
     document.querySelector('form').addEventListener('change', function () {
         showNeededFields();
