@@ -28,11 +28,14 @@ def signup():
 
     inputs = request.form
 
-    # Check that all inputs are valid.
-    is_existing_user, invalid_fields = verify_inputs(inputs)
+    # Check certain inputs for uniqueness.
+    non_unique_fields = unique_check(inputs)
 
-    if is_existing_user or invalid_fields:
-        return render_template('signup.html', existingUser=is_existing_user, invalidFields=invalid_fields)
+    # Check certain inputs for corrent formatting.
+    malformed_fields = format_check(inputs)
+
+    if non_unique_fields or malformed_fields:
+        return render_template('signup.html', nonUniqueFields=non_unique_fields, malformedFields=malformed_fields)
     
     # After this point, all inputs are valid.
     
@@ -81,55 +84,68 @@ def signup():
         case 'helpDesk':
             query_db('''
                 INSERT INTO helpDesk VALUES (?, ?);
-            ''', (inputs['email'], inputs['Position']), commit=True)
+            ''', (inputs['email'], inputs['position']), commit=True)
 
     return redirect(url_for('login'))
 
-def verify_inputs(inputs):
+def unique_check(inputs):
 
-    invalid_fields = []
-
+    non_unique_fields = []
     if query_db('''
             SELECT 1 FROM user WHERE email=?;
             ''', (inputs['email'],), one=True):
-        is_existing_user = True
-    else:
-        is_existing_user = False
+        non_unique_fields.append('Email')
+    
+    if inputs['accountType'] == 'seller' and query_db('''
+            SELECT 1 FROM bankInfo WHERE accountNum=?;
+            ''', (inputs['bankAccountNum'],), one=True):
+        non_unique_fields.append('Bank Account Number')
+
+    if inputs['accountType'] == 'buyer' and query_db('''
+            SELECT 1 FROM cardInfo WHERE number=?;
+            ''', (f'{inputs['cardNum'][:4]}-{inputs['cardNum'][4:8]}-{inputs['cardNum'][8:12]}-{inputs['cardNum'][12:]}',), one=True):
+        non_unique_fields.append('Card Number')
+    
+    return non_unique_fields
+
+def format_check(inputs):
+
+    malformed_fields = []
 
     if not re.fullmatch('([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(.[A-Z|a-z]{2,})+', inputs['email']):
-        invalid_fields.append('Email')
+        malformed_fields.append('Email')
     
     if not re.fullmatch('^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.*[0-9]).{8,60}$', inputs['password']):
-        invalid_fields.append('Password')
+        malformed_fields.append('Password')
 
     match inputs['accountType']:
         case 'seller':
             if not re.fullmatch('^[0-9]{3,6}$', inputs['addressZip']):
-                invalid_fields.append('Zip Code')
+                malformed_fields.append('Zip Code')
 
             if not re.fullmatch('^[0-9]{10}$', inputs['csNum']):
-                invalid_fields.append('Customer Service Number')
+                malformed_fields.append('Customer Service Number')
 
             if not re.fullmatch('^[0-9]{8}$', inputs['bankAccountNum']):
-                invalid_fields.append('Bank Account Number')
+                malformed_fields.append('Bank Account Number')
 
             if not re.fullmatch('^[0-9]{9}$', inputs['bankRoutingNum']):
-                invalid_fields.append('Bank Routing Number')
+                malformed_fields.append('Bank Routing Number')
 
             if not re.fullmatch('^[0-9]+$', inputs['bankBalance']):
-                invalid_fields.append('Bank Balance')
+                malformed_fields.append('Bank Balance')
 
         case 'buyer':
             if not re.fullmatch('^[0-9]{3,6}$', inputs['addressZip']):
-                invalid_fields.append('Zip Code')
+                malformed_fields.append('Zip Code')
 
             if not re.fullmatch('^[0-9]{16}$', inputs['cardNum']):
-                invalid_fields.append('Card Number')
+                malformed_fields.append('Card Number')
 
             if not re.fullmatch('^[0-9]{2,4}$', inputs['cardSecurityCode']):
-                invalid_fields.append('Card Security Code')
+                malformed_fields.append('Card Security Code')
     
-    return is_existing_user, invalid_fields
+    return malformed_fields
 
 
 @app.route('/login', methods=['GET', 'POST'])
