@@ -236,6 +236,38 @@ def read_products(filepath):
                                  rating=5, category=row['Category'].strip()))
     return products
 
+def get_all_subcategories(category_path, tree):
+    subcategories = []
+
+    # first find the node represented by param category_path
+
+    # parse the category_path bc of '>'
+    # goes from Beauty Products > Makeup -> [Beauty Products, Makeup]
+    keys = [k.strip() for k in category_path.split('>')]
+
+    # traverse the tree starting at tree which is the root level
+    current = tree
+    # iterate through each key in keys, check if the key exists in current (the root level initially)
+    for key in keys:
+        if key in current:
+            # if it does exist, set current to that category (go deeper into the tree)
+            current = current[key]
+        else:
+            # if not then return an invaldi path bc it cant find category in the tree
+            return []
+
+    # recursive function to get all of the tree starting from given param subtree
+    def get_subcategories(subtree, current_category):
+        # adds the current category to the subcategory list
+        subcategories.append(current_category)
+        # iterate through each child of the subtree passed in
+        for child in subtree:
+            get_subcategories(subtree[child], child)
+
+    # call on the current part of the tree starting w/ the last category in the path
+    get_subcategories(current, keys[-1])
+
+    return subcategories
 
 @app.route('/search')
 def search():
@@ -255,23 +287,27 @@ def search():
     selected_category = request.args.get('category', '').strip()
     search_query = request.args.get('query', '').strip().lower()
 
+    # debug to see if query and category are showing correctly
+    print(f"Query: {search_query}, Category: {selected_category}")
+
+    # initialize filtered_products to all of the product listings by default
     filtered_products = products
+
     # implement functionality for selecting a category and showing all of its products
-    # if selected_category:
+    # when a category is selected, get all the subcategories
+    all_subcategories = []
+    if selected_category:
+        all_subcategories = get_all_subcategories(selected_category, category_tree)
+        print(f"All subcategories for {selected_category}: {all_subcategories}")
+
+        # filter the products based on the category and its subcategories
+        filtered_products = [product for product in products if any(subcategory in all_subcategories for subcategory in product['category'].split(','))]
 
     # implement functionality for searching for an item
-    # if search_query:
+    if search_query:
+        filtered_products = [product for product in filtered_products if search_query in product['title'].lower() or search_query in product['description'].lower() or search_query in product['category'].lower()]
 
-    return render_template('search.html', category_tree=category_tree, products=filtered_products,
-                           selected_category=selected_category, search_query=search_query)
-
-
-@app.route('/search-results')
-def search_results():
-    category = request.args.get('category')
-    query = request.args.get('query')
-
-    return f"Search results for '{query}' in category '{category}'"
+    return render_template('search.html', category_tree=category_tree, products=filtered_products, selected_category=selected_category, search_query=search_query)
 
 @app.route('/profile')
 def anon_profile():
