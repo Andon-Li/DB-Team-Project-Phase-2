@@ -103,29 +103,121 @@
       .search-button:hover {
           background-color: #007bff;
       }
+
+      .results-container {
+          margin-top: 2rem;
+          padding: 1rem;
+          background-color: #f8f9fa;
+          min-height: 500px;
+          overflow-y: auto;
+      }
+
+      .results-item {
+          background-color: white;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          padding: 1rem;
+          margin-bottom: 1rem;
+          /* change height for each product listing here */
+          height: 120px;
+          display: flex;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          position: relative;
+      }
+
+      .results-item:hover {
+          background-color: #f8f9fa;
+          cursor: pointer;
+      }
+
+      .product-left {
+          width: 150px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          padding-right: 1rem;
+      }
+
+      .product-name {
+          font-weight: bold;
+          font-size: 1.1rem;
+          margin-bottom: 0.3rem;
+          text-align: center;
+      }
+
+      .product-price {
+          font-size: 1rem;
+          font-weight: bold;
+          color: #28a745;
+      }
+
+      .divider {
+          border-left: 1px solid #eee;
+          height: 100%;
+          margin: 0 1rem;
+      }
+
+      .product-info {
+          display: flex;
+          flex: 1;
+          flex-direction: column;
+          justify-content: center;
+      }
+
+      .product-title {
+          font-size: 1.2rem;
+          font-weight: bold;
+          margin-bottom: 0.5rem;
+      }
+
+      .product-description {
+          font-size: 0.9rem;
+          color: #666;
+          overflow: hidden;
+      }
+
+      .product-rating {
+          position: absolute;
+          top: 1rem;
+          right: 1rem;
+          background-color: #f8f9fa;
+          padding: 0.3rem 0.6rem;
+          border-radius: 4px;
+          font-weight: bold;
+          /*color: #ffc107; */
+          display: flex;
+          align-items: center;
+      }
   </style>
 </head>
 <body>
 <div class="container mt-4">
     <h3>Search in NittanyBusiness</h3>
 
-    <form class="search-form" action="/search-results" method="GET">
+    <form class="search-form" action="/search" method="GET">
         <div class="category-dropdown">
             <div class="dropdown-toggle" id="dropdownMenuButton">Select Category</div>
             <ul class="main-dropdown" id="category-menu"></ul>
+            <!-- Used as hidden input field to click on the category-->
+            <input type="hidden" name="category" id="selected-category" value="">
         </div>
-
-        <input type="text" class="search-input" name="query" placeholder="Search keywords...">
+        <input type="text" class="search-input" name="query" placeholder="Search keywords..." value="{{ search_query }}">
 
         <button type="submit" class="search-button">🔍</button>
     </form>
+
+    <div class="results-container" id="results-container">
+
+    </div>
+
 </div>
 
 <script>
     // might change to create helper function bc of overlapping logic for createMenu and on DOMContentLoaded
 
     // create a function to create submenus for the nested menu items recursively
-    function createMenu(tree){
+    function createMenu(tree, parentPath = []){
         // create a new ul element for the dropdown
         const ul = document.createElement('ul');
         ul.classList.add("dropdown-menu");
@@ -137,11 +229,38 @@
             li.className = "menu-item";
             li.textContent = key;
 
+            // track the current full path for this category
+            const currentPath = [...parentPath, key];
+
+            // store the path in the dataset (potentially use later for each item in the search)
+            li.dataset.categoryPath = currentPath.join(' > ');
+
             // if this category has children then we should create their menu recursively as well
             if (Object.keys(tree[key]).length > 0){
-                const childMenu = createMenu(tree[key]);
+                const childMenu = createMenu(tree[key], currentPath);
                 li.appendChild(childMenu);
             }
+
+            // implement clicking functionality for each button
+            li.addEventListener('click', function(e) {
+                // avoid bubbling up for parents and children
+                e.stopPropagation();
+
+                // create to access the dropdownMenuButton
+                const dropdownToggle = document.getElementById("dropdownMenuButton");
+
+                // update the text on screen to be the path of the category
+                dropdownToggle.innerHTML = this.dataset.categoryPath.replace(/&/g, '&amp;');
+
+                // update the hidden input with the selected path
+                document.getElementById("selected-category").value = this.dataset.categoryPath;
+
+                // after selecting category hide the menu
+                document.getElementById("category-menu").style.display = "none";
+
+                // debug to see if it shows in the inspect elem
+                console.log(this.dataset.categoryPath);
+            });
 
             // add the li to the overhanging ul
             ul.appendChild(li);
@@ -150,7 +269,7 @@
         return ul;
     }
 
-    // When the webpage loads this event will call
+    // when the webpage loads this event will call
     document.addEventListener('DOMContentLoaded', () => {
         // get the category tree data from flask (use tojson for dict)
         const categoryTree = {{ category_tree | tojson }};
@@ -179,18 +298,136 @@
             li.className = "menu-item";
             li.textContent = key;
 
+            // store the category path for each category
+            li.dataset.categoryPath = key;
+
             // if the category has its own children then create that submenu
             if (Object.keys(categoryTree[key]).length > 0){
                 // will call this recursively for each child (the length of the object)
-                const childMenu = createMenu(categoryTree[key]);
+                const childMenu = createMenu(categoryTree[key], [key]);
                 li.appendChild(childMenu);
             }
+
+            // implement clicking functionality for each button
+            li.addEventListener('click', function(e) {
+                // avoid bubbling up for parents and children
+                e.stopPropagation();
+
+                // create to access the dropdownMenuButton
+                const dropdownToggle = document.getElementById("dropdownMenuButton");
+
+                // update the text on screen to be the path of the category
+                dropdownToggle.innerHTML = this.dataset.categoryPath.replace(/&/g, '&amp;');
+
+                // update the hidden input with the selected path
+                document.getElementById("selected-category").value = this.dataset.categoryPath;
+
+                // after selecting category hide the menu
+                document.getElementById("category-menu").style.display = "none";
+
+                // debug to see if it shows in the inspect elem
+                console.log(this.dataset.categoryPath);
+            });
+
             ul.appendChild(li);
         }
 
         // add the complete menu to our webpage
         topMenu.appendChild(ul);
+
+        /* selected category section  */
+
+        // get the category from flask
+        const selectedCategoryPath = "{{ selected_category|safe }}";
+
+        if (selectedCategoryPath){
+            document.getElementById("dropdownMenuButton").textContent = selectedCategoryPath;
+            document.getElementById("selected-category").value = selectedCategoryPath;
+        }
+
+        // when a category is clicked the form has to be submitted
+        document.querySelectorAll('.menu-item').forEach((item) => {
+            item.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const categoryPath = this.dataset.categoryPath;
+                document.getElementById("selected-category").value = categoryPath;
+                document.querySelector('.search-form').submit();
+            });
+        });
+
+        // fetch product listings from flask (main.py)
+        const products = {{ products | tojson }}
+        // try printing to console (hopefully it shows up)
+        console.log("Products being displayed: ", products);
+        const container = document.getElementById("results-container");
+
+        // check if the container is empty
+        if (!container) {
+            console.error("Results container not found!");
+            return;
+        }
+
+        // clear container product listings first
+        container.innerHTML = '';
+
+        // create the product listings for each product
+        products.forEach(product => {
+            const listing = document.createElement('div');
+            // need same class name for styling
+            listing.className = 'results-item';
+            // sets all the html dynamically for each product
+            listing.innerHTML =
+                `<!-- left section for name and price -->
+                <div class="product-left">
+                    <div class="product-name">${product.name}</div>
+                    <div class="product-price">${product.price}</div>
+                </div>
+
+                <!-- divider in between left and right sides-->
+                <div class="divider"></div>
+
+                <!-- product info showing title and description -->
+                <div class="product-info">
+                    <div class="product-title">${product.title}</div>
+                    <div class="product-description">${product.description}</div>
+                </div>
+
+                <!-- product rating -->
+                <div class="product-rating">Rating: ${product.rating}</div>`
+            ;
+            // add the product listing to the container
+            container.appendChild(listing);
+            });
     });
+
+    // function to populate the product listings
+    function createProductListing(product, container) {
+        const listing = document.createElement('div');
+        // need same class name for styling
+        listing.className = 'results-item';
+        // sets all the html dynamically for each product
+        listing.innerHTML =
+            `<!-- left section for name and price -->
+            <div class="product-left">
+                <div class="product-name">${product.name}</div>
+                <div class="product-price">${product.price}</div>
+            </div>
+
+            <!-- divider in between left and right sides-->
+            <div class="divider"></div>
+
+            <!-- product info showing title and description -->
+            <div class="product-info">
+                <div class="product-title">${product.title}</div>
+                <div class="product-description">${product.description}</div>
+            </div>
+
+            <!-- product rating -->
+            <div class="product-rating">Rating: ${product.rating}</div>`
+        ;
+        // add the product listing to the container
+        container.appendChild(listing);
+    }
 </script>
 </body>
 </html>

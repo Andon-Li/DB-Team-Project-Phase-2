@@ -208,6 +208,7 @@ def read_categories(filepath):
                 dict(category_name=row['category_name'].strip(), parent_category=row['parent_category'].strip()))
     return categories
 
+
 # function to create the category tree hierarchy
 def make_tree(categories, parent="Root"):
     tree = {}
@@ -222,20 +223,47 @@ def make_tree(categories, parent="Root"):
     # return the tree
     return tree
 
+
+def read_products(filepath):
+    products = []
+    # open the csv and read every line from Product_Listings.csv
+    with open(filepath, newline='') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            # append each product name, title, description, price, rating(hardcoded rn), and category to dictionary to return data
+            products.append(dict(name=row['Product_Name'].strip(), title=row['Product_Title'].strip(),
+                                 description=row['Product_Description'].strip(), price=row['Product_Price'].strip(),
+                                 rating=5, category=row['Category'].strip()))
+    return products
+
+
 @app.route('/search')
 def search():
     # implement this when signup is complete
-    #if 'email' not in session:
+    # if 'email' not in session:
     #    return redirect(url_for('login'))
-    #else:
+    # else:
 
     # read the categories from the csv and make the tree based off of it
     categories = read_categories('data/Categories.csv')
     category_tree = make_tree(categories)
+    # read the product listings from the csv
+    products = read_products('data/Product_Listings.csv')
     # debug to see if the category tree is correct
     print("Category Tree:", category_tree)
 
-    return render_template('search.html', category_tree=category_tree)
+    selected_category = request.args.get('category', '').strip()
+    search_query = request.args.get('query', '').strip().lower()
+
+    filtered_products = products
+    # implement functionality for selecting a category and showing all of its products
+    # if selected_category:
+
+    # implement functionality for searching for an item
+    # if search_query:
+
+    return render_template('search.html', category_tree=category_tree, products=filtered_products,
+                           selected_category=selected_category, search_query=search_query)
 
 
 @app.route('/search-results')
