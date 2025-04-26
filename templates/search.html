@@ -1,14 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>NittanyBusiness</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link
-    rel="stylesheet"
-    href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-    crossorigin="anonymous"
-  >
+{% extends 'base.html' %}
+
+{% block title %}Search{% endblock %}
+
+{% block head %}
   <style>
       .menu, .dropdown-menu {
           list-style: none;
@@ -190,9 +184,9 @@
           align-items: center;
       }
   </style>
-</head>
-<body>
-<div class="container mt-4">
+{% endblock %}
+
+{% block body %}
     <h3>Search in NittanyBusiness</h3>
 
     <form class="search-form" action="/search" method="GET">
@@ -210,168 +204,198 @@
     <div class="results-container" id="results-container">
 
     </div>
+{% endblock %}
 
-</div>
+{% block scripts %}
+    <script>
+        // might change to create helper function bc of overlapping logic for createMenu and on DOMContentLoaded
 
-<script>
-    // might change to create helper function bc of overlapping logic for createMenu and on DOMContentLoaded
+        // create a function to create submenus for the nested menu items recursively
+        function createMenu(tree, parentPath = []){
+            // create a new ul element for the dropdown
+            const ul = document.createElement('ul');
+            ul.classList.add("dropdown-menu");
 
-    // create a function to create submenus for the nested menu items recursively
-    function createMenu(tree, parentPath = []){
-        // create a new ul element for the dropdown
-        const ul = document.createElement('ul');
-        ul.classList.add("dropdown-menu");
+            // loop iteratively through each key in the category tree
+            for (const key in tree){
+                // create a new li element for this category
+                const li = document.createElement('li');
+                li.className = "menu-item";
+                li.textContent = key;
 
-        // loop iteratively through each key in the category tree
-        for (const key in tree){
-            // create a new li element for this category
-            const li = document.createElement('li');
-            li.className = "menu-item";
-            li.textContent = key;
+                // track the current full path for this category
+                const currentPath = [...parentPath, key];
 
-            // track the current full path for this category
-            const currentPath = [...parentPath, key];
+                // store the path in the dataset (potentially use later for each item in the search)
+                li.dataset.categoryPath = currentPath.join(' > ');
 
-            // store the path in the dataset (potentially use later for each item in the search)
-            li.dataset.categoryPath = currentPath.join(' > ');
+                // if this category has children then we should create their menu recursively as well
+                if (Object.keys(tree[key]).length > 0){
+                    const childMenu = createMenu(tree[key], currentPath);
+                    li.appendChild(childMenu);
+                }
 
-            // if this category has children then we should create their menu recursively as well
-            if (Object.keys(tree[key]).length > 0){
-                const childMenu = createMenu(tree[key], currentPath);
-                li.appendChild(childMenu);
+                // implement clicking functionality for each button
+                li.addEventListener('click', function(e) {
+                    // avoid bubbling up for parents and children
+                    e.stopPropagation();
+
+                    // create to access the dropdownMenuButton
+                    const dropdownToggle = document.getElementById("dropdownMenuButton");
+
+                    // update the text on screen to be the path of the category
+                    dropdownToggle.innerHTML = this.dataset.categoryPath.replace(/&/g, '&amp;');
+
+                    // update the hidden input with the selected path
+                    document.getElementById("selected-category").value = this.dataset.categoryPath;
+
+                    // after selecting category hide the menu
+                    document.getElementById("category-menu").style.display = "none";
+
+                    // debug to see if it shows in the inspect elem
+                    console.log(this.dataset.categoryPath);
+                });
+
+                // add the li to the overhanging ul
+                ul.appendChild(li);
             }
+            // return unordered list when done
+            return ul;
+        }
 
-            // implement clicking functionality for each button
-            li.addEventListener('click', function(e) {
-                // avoid bubbling up for parents and children
-                e.stopPropagation();
+        // when the webpage loads this event will call
+        document.addEventListener('DOMContentLoaded', () => {
+            // get the category tree data from flask (use tojson for dict)
+            const categoryTree = {{ category_tree | tojson }};
+            const topMenu = document.getElementById("category-menu");
+            const dropdownToggle = document.getElementById("dropdownMenuButton");
 
-                // create to access the dropdownMenuButton
-                const dropdownToggle = document.getElementById("dropdownMenuButton");
-
-                // update the text on screen to be the path of the category
-                dropdownToggle.innerHTML = this.dataset.categoryPath.replace(/&/g, '&amp;');
-
-                // update the hidden input with the selected path
-                document.getElementById("selected-category").value = this.dataset.categoryPath;
-
-                // after selecting category hide the menu
-                document.getElementById("category-menu").style.display = "none";
-
-                // debug to see if it shows in the inspect elem
-                console.log(this.dataset.categoryPath);
+            // toggle the main dropdown upon the button being clicked
+            dropdownToggle.addEventListener('click', function() {
+                topMenu.style.display = topMenu.style.display === 'block' ? 'none' : 'block';
             });
 
-            // add the li to the overhanging ul
-            ul.appendChild(li);
-        }
-        // return unordered list when done
-        return ul;
-    }
-
-    // when the webpage loads this event will call
-    document.addEventListener('DOMContentLoaded', () => {
-        // get the category tree data from flask (use tojson for dict)
-        const categoryTree = {{ category_tree | tojson }};
-        const topMenu = document.getElementById("category-menu");
-        const dropdownToggle = document.getElementById("dropdownMenuButton");
-
-        // toggle the main dropdown upon the button being clicked
-        dropdownToggle.addEventListener('click', function() {
-            topMenu.style.display = topMenu.style.display === 'block' ? 'none' : 'block';
-        });
-
-        // handle edge case to close the dropdown menu if the user clicks outside the dropdown
-        document.addEventListener('click', function(outsideEvent) {
-            if (!outsideEvent.target.closest('.category-dropdown')) {
-                topMenu.style.display = 'none';
-            }
-        });
-
-        // create the main ul container
-        const ul = document.createElement('ul');
-        ul.className = "menu";
-
-        // add each top level category
-        for (const key in categoryTree){
-            const li = document.createElement('li');
-            li.className = "menu-item";
-            li.textContent = key;
-
-            // store the category path for each category
-            li.dataset.categoryPath = key;
-
-            // if the category has its own children then create that submenu
-            if (Object.keys(categoryTree[key]).length > 0){
-                // will call this recursively for each child (the length of the object)
-                const childMenu = createMenu(categoryTree[key], [key]);
-                li.appendChild(childMenu);
-            }
-
-            // implement clicking functionality for each button
-            li.addEventListener('click', function(e) {
-                // avoid bubbling up for parents and children
-                e.stopPropagation();
-
-                // create to access the dropdownMenuButton
-                const dropdownToggle = document.getElementById("dropdownMenuButton");
-
-                // update the text on screen to be the path of the category
-                dropdownToggle.innerHTML = this.dataset.categoryPath.replace(/&/g, '&amp;');
-
-                // update the hidden input with the selected path
-                document.getElementById("selected-category").value = this.dataset.categoryPath;
-
-                // after selecting category hide the menu
-                document.getElementById("category-menu").style.display = "none";
-
-                // debug to see if it shows in the inspect elem
-                console.log(this.dataset.categoryPath);
+            // handle edge case to close the dropdown menu if the user clicks outside the dropdown
+            document.addEventListener('click', function(outsideEvent) {
+                if (!outsideEvent.target.closest('.category-dropdown')) {
+                    topMenu.style.display = 'none';
+                }
             });
 
-            ul.appendChild(li);
-        }
+            // create the main ul container
+            const ul = document.createElement('ul');
+            ul.className = "menu";
 
-        // add the complete menu to our webpage
-        topMenu.appendChild(ul);
+            // add each top level category
+            for (const key in categoryTree){
+                const li = document.createElement('li');
+                li.className = "menu-item";
+                li.textContent = key;
 
-        /* selected category section  */
+                // store the category path for each category
+                li.dataset.categoryPath = key;
 
-        // get the category from flask
-        const selectedCategoryPath = "{{ selected_category|safe }}";
+                // if the category has its own children then create that submenu
+                if (Object.keys(categoryTree[key]).length > 0){
+                    // will call this recursively for each child (the length of the object)
+                    const childMenu = createMenu(categoryTree[key], [key]);
+                    li.appendChild(childMenu);
+                }
 
-        if (selectedCategoryPath){
-            document.getElementById("dropdownMenuButton").textContent = selectedCategoryPath;
-            document.getElementById("selected-category").value = selectedCategoryPath;
-        }
+                // implement clicking functionality for each button
+                li.addEventListener('click', function(e) {
+                    // avoid bubbling up for parents and children
+                    e.stopPropagation();
 
-        // when a category is clicked the form has to be submitted
-        document.querySelectorAll('.menu-item').forEach((item) => {
-            item.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const categoryPath = this.dataset.categoryPath;
-                document.getElementById("selected-category").value = categoryPath;
-                document.querySelector('.search-form').submit();
+                    // create to access the dropdownMenuButton
+                    const dropdownToggle = document.getElementById("dropdownMenuButton");
+
+                    // update the text on screen to be the path of the category
+                    dropdownToggle.innerHTML = this.dataset.categoryPath.replace(/&/g, '&amp;');
+
+                    // update the hidden input with the selected path
+                    document.getElementById("selected-category").value = this.dataset.categoryPath;
+
+                    // after selecting category hide the menu
+                    document.getElementById("category-menu").style.display = "none";
+
+                    // debug to see if it shows in the inspect elem
+                    console.log(this.dataset.categoryPath);
+                });
+
+                ul.appendChild(li);
+            }
+
+            // add the complete menu to our webpage
+            topMenu.appendChild(ul);
+
+            /* selected category section  */
+
+            // get the category from flask
+            const selectedCategoryPath = "{{ selected_category|safe }}";
+
+            if (selectedCategoryPath){
+                document.getElementById("dropdownMenuButton").textContent = selectedCategoryPath;
+                document.getElementById("selected-category").value = selectedCategoryPath;
+            }
+
+            // when a category is clicked the form has to be submitted
+            document.querySelectorAll('.menu-item').forEach((item) => {
+                item.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const categoryPath = this.dataset.categoryPath;
+                    document.getElementById("selected-category").value = categoryPath;
+                    document.querySelector('.search-form').submit();
+                });
             });
+
+            // fetch product listings from flask (main.py)
+            const products = {{ products | tojson }}
+            // try printing to console (hopefully it shows up)
+            console.log("Products being displayed: ", products);
+            const container = document.getElementById("results-container");
+
+            // check if the container is empty
+            if (!container) {
+                console.error("Results container not found!");
+                return;
+            }
+
+            // clear container product listings first
+            container.innerHTML = '';
+
+            // create the product listings for each product
+            products.forEach(product => {
+                const listing = document.createElement('div');
+                // need same class name for styling
+                listing.className = 'results-item';
+                // sets all the html dynamically for each product
+                listing.innerHTML =
+                    `<!-- left section for name and price -->
+                    <div class="product-left">
+                        <div class="product-name">${product.name}</div>
+                        <div class="product-price">${product.price}</div>
+                    </div>
+
+                    <!-- divider in between left and right sides-->
+                    <div class="divider"></div>
+
+                    <!-- product info showing title and description -->
+                    <div class="product-info">
+                        <div class="product-title">${product.title}</div>
+                        <div class="product-description">${product.description}</div>
+                    </div>
+
+                    <!-- product rating -->
+                    <div class="product-rating">Rating: ${product.rating}</div>`
+                ;
+                // add the product listing to the container
+                container.appendChild(listing);
+                });
         });
 
-        // fetch product listings from flask (main.py)
-        const products = {{ products | tojson }}
-        // try printing to console (hopefully it shows up)
-        console.log("Products being displayed: ", products);
-        const container = document.getElementById("results-container");
-
-        // check if the container is empty
-        if (!container) {
-            console.error("Results container not found!");
-            return;
-        }
-
-        // clear container product listings first
-        container.innerHTML = '';
-
-        // create the product listings for each product
-        products.forEach(product => {
+        // function to populate the product listings
+        function createProductListing(product, container) {
             const listing = document.createElement('div');
             // need same class name for styling
             listing.className = 'results-item';
@@ -397,37 +421,6 @@
             ;
             // add the product listing to the container
             container.appendChild(listing);
-            });
-    });
-
-    // function to populate the product listings
-    function createProductListing(product, container) {
-        const listing = document.createElement('div');
-        // need same class name for styling
-        listing.className = 'results-item';
-        // sets all the html dynamically for each product
-        listing.innerHTML =
-            `<!-- left section for name and price -->
-            <div class="product-left">
-                <div class="product-name">${product.name}</div>
-                <div class="product-price">${product.price}</div>
-            </div>
-
-            <!-- divider in between left and right sides-->
-            <div class="divider"></div>
-
-            <!-- product info showing title and description -->
-            <div class="product-info">
-                <div class="product-title">${product.title}</div>
-                <div class="product-description">${product.description}</div>
-            </div>
-
-            <!-- product rating -->
-            <div class="product-rating">Rating: ${product.rating}</div>`
-        ;
-        // add the product listing to the container
-        container.appendChild(listing);
-    }
-</script>
-</body>
-</html>
+        }
+    </script>
+{% endblock %}
