@@ -478,7 +478,24 @@ def profile(email):
 
 @app.route('/order')
 def order():
-    return render_template('orders.html')
+    if 'email' not in session:
+        return redirect(url_for('login'))
+
+    user_email = session['email']
+    account_type = find_account_type(user_email)
+
+    orders = []
+    with open('data/Orders.csv', 'r', newline='', encoding='utf-8') as csvfile:
+        reader = csv.DictReader(csvfile)
+        orders = list(reader)
+
+    filtered_orders = []
+    if account_type == 'buyer':
+        filtered_orders = [order for order in orders if order['Buyer_Email'].strip() == user_email]
+    elif account_type == 'seller':
+        filtered_orders = [order for order in orders if order['Seller_Email'].strip() == user_email]
+
+    return render_template('orders.html', orders=filtered_orders, account_type=account_type)
 
 @app.route('/error')
 def error():
