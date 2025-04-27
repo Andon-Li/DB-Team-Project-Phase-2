@@ -2,14 +2,127 @@
 {% block title %}Profile{% endblock %}
 
 {% block head %}
-    <style></style>
+    <style>
+        .card {
+            border-radius: 10px;
+        }
+
+        .progress {
+            height: 5px;
+        }
+    </style>
 {% endblock %}
 
 {% block body %}
-    <h1>Profile</h1>
-    <p>Welcome, {{ email }}!</p>
+    <div class="container">
+        <div class="row gutters-sm mt-3">
+            <div class=".col-md-4 mb-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <img src="http://www.gravatar.com/avatar/?d=mp" alt="Profile Picture" class="rounded-circle" width="150">
+                        <div class="mt-3">
+                            <h4>{{ user_data.businessName if user_data.businessName else "User"}}</h4>
+                            <p class="text-secondary mb-1">{{ account_type | capitalize }} Account</p>
+                            <p class="text-muted font-size-sm">{{ user_data.street }}, {{ user_data.zipCode }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8 mb-3">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="row mb-2">
+                            <div class="col-sm-9 text-primary"><h6>Welcome, {{ email }}!</h6></div>
+                        </div>
+                        {% if account_type == "seller" %}
+                            <div class="row mb-2">
+                                <div class="col-sm-3"><h6>Email</h6></div>
+                                <div class="col-sm-9 text-secondary">{{ user_data.email }}</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-sm-3"><h6>Street</h6></div>
+                                <div class="col-sm-9 text-secondary">{{ user_data.street }}</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-sm-3"><h6>Zip Code</h6></div>
+                                <div class="col-sm-9 text-secondary">{{ user_data.zipCode }}</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-sm-3"><h6>Business Name</h6></div>
+                                <div class="col-sm-9 text-secondary">{{ user_data.businessName }}</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-sm-3"><h6>Phone</h6></div>
+                                <div class="col-sm-9 text-secondary">{{ user_data.csNum }}</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-sm-3"><h6>Bank Account</h6></div>
+                                <div class="col-sm-9 text-secondary">{{ user_data.bankAccountNum }}</div>
+                            </div>
+                        {% elif account_type == "buyer" %}
+                            <div class="row mb-2">
+                                <div class="col-sm-3"><h6>Email</h6></div>
+                                <div class="col-sm-9 text-secondary">{{ user_data.email }}</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-sm-3"><h6>Street</h6></div>
+                                <div class="col-sm-9 text-secondary">{{ user_data.street }}</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-sm-3"><h6>Zip Code</h6></div>
+                                <div class="col-sm-9 text-secondary">{{ user_data.zipCode }}</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-sm-3"><h6>Business Name</h6></div>
+                                <div class="col-sm-9 text-secondary">{{ user_data.businessName }}</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-sm-3"><h6>Card Number</h6></div>
+                                <div class="col-sm-9 text-secondary">{{ user_data.cardNum }}</div>
+                            </div>
+                        {% elif account_type == "helpdesk" %}
+                            <div class="row mb-2">
+                                <div class="col-sm-3"><h6>Email</h6></div>
+                                <div class="col-sm-9 text-secondary">{{ user_data.email }}</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-sm-3"><h6>Position</h6></div>
+                                <div class="col-sm-9 text-secondary">{{ user_data.position }}</div>
+                            </div>
+                        {% endif %}
+                        <hr>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <a class="btn btn-info" href="#">Edit</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if account_type != "helpdesk" %}
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="d-flex align-items-center mb-3">
+                            <i class="material-icons text-info mr-2">Reviews</i>
+                        </h6>
+                        {% if reviews %}
+                            {% for review in reviews %}
+                            <small>{{ review.title }}</small>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted">No reviews available.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block scripts %}
-    <script></script>
+    <script>
+
+    </script>
 {% endblock %}

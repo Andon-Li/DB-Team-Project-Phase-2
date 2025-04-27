@@ -359,13 +359,34 @@ def anon_profile():
 
     return redirect(url_for('profile', email=session['email']))
 
-
 @app.route('/profile/<email>')
 def profile(email):
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    return render_template('profile.html', email=email)
+    email = session['email']
+
+    # fetch user info based on account type
+    user_data = {}
+    account_type = ""
+    reviews = []
+
+    # hardcoded for now to test
+    account_type = "seller"
+    user_data = {
+        'email': email,
+        'street': '123 Main street',
+        'zipCode': '12345',
+        'businessName': 'My Business',
+        'csNum': '123-456-7890',
+        'bankAccountNum': '123456789'
+    }
+    reviews = [
+        {'title': 'Great Service', 'rating': 5},
+        {'title': 'Fast Shipping', 'rating': 4}
+    ]
+
+    return render_template('profile.html', email=email, user_data=user_data, account_type=account_type, reviews=reviews)
 
 
 @app.route('/error')
