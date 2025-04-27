@@ -354,103 +354,64 @@ def search():
     return render_template('search.html', category_tree=category_tree, products=filtered_products, selected_category=selected_category, search_query=search_query, listing_ratings=listing_ratings)
 
 def find_account_type(email):
-    # check if email is in sellers csv
-    with open("data/Sellers.csv", newline='', encoding='utf-8-sig') as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            if row['email'].strip() == email:
-                return 'seller'
+    # check if email is in sellers table in the db
+    seller = query_db('SELECT * FROM seller WHERE email=?', [email], one=True)
+    if seller:
+        return 'seller'
 
-    # check if email is in buyers csv
-    with open("data/Buyers.csv", newline='', encoding='utf-8-sig') as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            if row['email'].strip() == email:
-                return 'buyer'
+    # check if email is in buyers table in the db
+    buyer = query_db('SELECT * FROM buyer WHERE email=?', [email], one=True)
+    if buyer:
+        return 'buyer'
 
-    # check if email is in helpdesk csv
-    with open("data/Helpdesk.csv", newline='', encoding='utf-8-sig') as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            if row['email'].strip() == email:
-                return 'helpdesk'
+    # check if email is in helpdesk table in the db
+    helpdesk = query_db('SELECT * FROM helpdesk WHERE email=?', [email], one=True)
+    if helpdesk:
+        return 'helpdesk'
 
-    # if none are found by this point, account type is anon
-    return 'anon'
+    # no account type is found
+    return 'anonymous'
+
 
 def load_user_data(email, account_type):
     user_data = {}
 
+    # is it a seller account?
     if account_type == "seller":
-        # then we need to find the seller info first
-        with open("data/Sellers.csv", newline='', encoding='utf-8-sig') as csvfile:
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                if row['email'].strip() == email:
-                    user_data['email'] = row['email'].strip()
-                    user_data['businessName'] = row['business_name'].strip()
-                    business_address_id = row['Business_Address_ID'].strip()
-                    user_data['bankRoutingNum'] = row['bank_routing_number'].strip()
-                    user_data['bankAccountNum'] = row['bank_account_number'].strip()
-                    user_data['balance'] = row['balance'].strip()
-                    break
+        # then we need to fetch the seller info first from the db
+        seller = query_db('SELECT * FROM seller WHERE email=?', [email], one=True)
+        if seller:
+            user_data['email'] = seller['email'].strip()
+            user_data['businessName'] = seller['businessName'].strip()
+            user_data['street'] = seller['street'].strip()
+            user_data['zipCode'] = seller['zipCode'].strip()
+            user_data['csNum'] = seller['csNum'].strip()
+            user_data['bankAccountNum'] = seller['bankAccountNum'].strip()
 
-        # need the get the address of the seller
-        with open("data/Address.csv", newline='', encoding='utf-8-sig') as csvfile:
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                if row['address_id'].strip() == business_address_id:
-                    user_data['street'] = f"{row['street_num'].strip()} {row['street_name'].strip()}"
-                    zip_code = row['zipcode'].strip()
-                    user_data['zipCode'] = zip_code
-                    break
+            # now fetch the bank details in bankInfo table using bankAccountNum from seller
+            bank_info = query_db('SELECT * FROM bankInfo WHERE accountNum=?', [seller['bankAccountNum']], one=True)
+            if bank_info:
+                user_data['bankRoutingNum'] = bank_info['routingNum'].strip()
+                user_data['balance'] = bank_info['balance']
 
-        # need to find city and state from zipcode
-        with open("data/Zipcode_Info.csv", newline='', encoding='utf-8-sig') as csvfile:
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                if row['zipcode'].strip() == zip_code:
-                    user_data['city'] = row['city'].strip()
-                    user_data['state'] = row['state'].strip()
-                    break
-
+    # is it a buyer account?
     elif account_type == "buyer":
-        # if it's a buyer account then we need to find the buyer info first
-        with open("data/Buyers.csv", newline='', encoding='utf-8-sig') as csvfile:
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                if row['email'].strip() == email:
-                    user_data['email'] = row['email'].strip()
-                    user_data['businessName'] = row['business_name'].strip()
-                    buyer_address_id = row['buyer_address_id'].strip()
-                    break
+        # if it's a buyer account then we need to fetch the buyer info from the buyer table in the db
+        buyer = query_db('SELECT * FROM buyer WHERE email=?', [email], one=True)
+        if buyer:
+            user_data['email'] = buyer['email'].strip()
+            user_data['businessName'] = buyer['businessName'].strip()
+            user_data['street'] = buyer['street'].strip()
+            user_data['zipCode'] = buyer['zipCode'].strip()
+            user_data['cardNum'] = buyer['cardNum'].strip()
 
-        # find the buyer's address
-        with open("data/Address.csv", newline='', encoding='utf-8-sig') as csvfile:
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                if row['address_id'].strip() == buyer_address_id:
-                    user_data['street'] = f"{row['street_num'].strip()} {row['street_name'].strip()}"
-                    zip_code = row['zipcode'].strip()
-                    user_data['zipCode'] = zip_code
-                    break
-
-        with open("data/Zipcode_Info.csv", newline='', encoding='utf-8-sig') as csvfile:
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                if row['zipcode'].strip() == zip_code:
-                    user_data['city'] = row['city'].strip()
-                    user_data['state'] = row['state'].strip()
-                    break
-
+    # is it a helpdesk account?
     elif account_type == "helpdesk":
-        with open('data/Helpdesk.csv', newline='', encoding='utf-8-sig') as csvfile:
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                if row['email'].strip() == email:
-                    user_data['email'] = row['email'].strip()
-                    user_data['position'] = row['Position'].strip()
-                    break
+        # if it's a helpdesk account then we need to fetch the helpDesk info from the helpDesk table in the db
+        helpdesk = query_db('SELECT * FROM helpDesk WHERE email=?', [email], one=True)
+        if helpdesk:
+            user_data['email'] = helpdesk['email'].strip()
+            user_data['position'] = helpdesk['Position'].strip()
 
     else:
         return None
@@ -469,8 +430,6 @@ def profile(email):
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    # have to implement feature so that it can tell for now accounts what the account type is
-    # from the db
     account_type = find_account_type(email)
     user_data = load_user_data(email, account_type)
 
