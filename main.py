@@ -213,13 +213,14 @@ def make_tree(categories, parent="Root"):
     tree = {}
     # iterate through the categories
     for row in categories:
-        # if one of the rows in the parent_category is a parent then set the child category and recursively go through the tree
+        # if one of the rows in the parent_category is a parent then set the child category
+        # and recursively go through the tree
         # first iteration will be "Root", second will be first parent found, etc
         if row["parent_category"] == parent:
             category = row['category_name']
             tree[category] = make_tree(categories, parent=category)
 
-    # return the tree
+    # at the end, return the tree
     return tree
 
 def read_products(filepath):
@@ -352,6 +353,72 @@ def search():
 
     return render_template('search.html', category_tree=category_tree, products=filtered_products, selected_category=selected_category, search_query=search_query, listing_ratings=listing_ratings)
 
+def find_account_type(email):
+    # check if email is in sellers csv
+    with open("data/Sellers.csv", newline='', encoding='utf-8-sig') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            print(row)
+            if row['email'].strip() == email:
+                return 'seller'
+
+    # check if email is in buyers csv
+    with open("data/Buyers.csv", newline='', encoding='utf-8-sig') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            if row['email'].strip() == email:
+                return 'buyer'
+
+    # check if email is in helpdesk csv
+    with open("data/Helpdesk.csv", newline='', encoding='utf-8-sig') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            if row['email'].strip() == email:
+                return 'helpdesk'
+
+    # if none are found by this point, account type is anon
+    return 'anon'
+
+def load_user_data(email, account_type):
+    user_data = {}
+
+    if account_type == "seller":
+        # then we need to find the seller info first
+        with open("data/Sellers.csv", newline='', encoding='utf-8-sig') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                if row['email'].strip() == email:
+                    user_data['email'] = row['email'].strip()
+                    user_data['businessName'] = row['business_name'].strip()
+                    business_address_id = row['Business_Address_ID'].strip()
+                    user_data['bankRoutingNum'] = row['bank_routing_number'].strip()
+                    user_data['bankAccountNum'] = row['bank_account_number'].strip()
+                    user_data['balance'] = row['balance'].strip()
+                    break
+
+        # need the get the address of the seller
+        with open("data/Address.csv", newline='', encoding='utf-8-sig') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                if row['address_id'].strip() == business_address_id:
+                    user_data['street'] = f"{row['street_num'].strip()} {row['street_name'].strip()}"
+                    zip_code = row['zipcode'].strip()
+                    user_data['zipCode'] = zip_code
+                    break
+
+        # need to find city and state from zipcode
+        with open("data/Zipcode_Info.csv", newline='', encoding='utf-8-sig') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                if row['zipcode'].strip() == zip_code:
+                    user_data['city'] = row['city'].strip()
+                    user_data['state'] = row['state'].strip()
+                    break
+    else:
+        return None
+
+    return user_data
+
 @app.route('/profile')
 def anon_profile():
     if 'email' not in session:
@@ -364,29 +431,11 @@ def profile(email):
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    email = session['email']
+    #email = session['email']
+    account_type = find_account_type(email)
+    user_data = load_user_data(email, account_type)
 
-    # fetch user info based on account type
-    user_data = {}
-    account_type = ""
-    reviews = []
-
-    # hardcoded for now to test
-    account_type = "seller"
-    user_data = {
-        'email': email,
-        'street': '123 Main street',
-        'zipCode': '12345',
-        'businessName': 'My Business',
-        'csNum': '123-456-7890',
-        'bankAccountNum': '123456789'
-    }
-    reviews = [
-        {'title': 'Great Service', 'rating': 5},
-        {'title': 'Fast Shipping', 'rating': 4}
-    ]
-
-    return render_template('profile.html', email=email, user_data=user_data, account_type=account_type, reviews=reviews)
+    return render_template('profile.html', email=email, user_data=user_data, account_type=account_type)
 
 
 @app.route('/error')
