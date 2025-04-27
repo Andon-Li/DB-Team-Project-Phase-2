@@ -358,7 +358,6 @@ def find_account_type(email):
     with open("data/Sellers.csv", newline='', encoding='utf-8-sig') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            print(row)
             if row['email'].strip() == email:
                 return 'seller'
 
@@ -414,6 +413,45 @@ def load_user_data(email, account_type):
                     user_data['city'] = row['city'].strip()
                     user_data['state'] = row['state'].strip()
                     break
+
+    elif account_type == "buyer":
+        # if it's a buyer account then we need to find the buyer info first
+        with open("data/Buyers.csv", newline='', encoding='utf-8-sig') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                if row['email'].strip() == email:
+                    user_data['email'] = row['email'].strip()
+                    user_data['businessName'] = row['business_name'].strip()
+                    buyer_address_id = row['buyer_address_id'].strip()
+                    break
+
+        # find the buyer's address
+        with open("data/Address.csv", newline='', encoding='utf-8-sig') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                if row['address_id'].strip() == buyer_address_id:
+                    user_data['street'] = f"{row['street_num'].strip()} {row['street_name'].strip()}"
+                    zip_code = row['zipcode'].strip()
+                    user_data['zipCode'] = zip_code
+                    break
+
+        with open("data/Zipcode_Info.csv", newline='', encoding='utf-8-sig') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                if row['zipcode'].strip() == zip_code:
+                    user_data['city'] = row['city'].strip()
+                    user_data['state'] = row['state'].strip()
+                    break
+
+    elif account_type == "helpdesk":
+        with open('data/Helpdesk.csv', newline='', encoding='utf-8-sig') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                if row['email'].strip() == email:
+                    user_data['email'] = row['email'].strip()
+                    user_data['position'] = row['Position'].strip()
+                    break
+
     else:
         return None
 

@@ -21,7 +21,7 @@
                     <div class="card-body text-center">
                         <img src="http://www.gravatar.com/avatar/?d=mp" alt="Profile Picture" class="rounded-circle" width="150">
                         <div class="mt-3">
-                            <h4>{{ user_data.businessName if user_data.businessName else "User"}}</h4>
+                            <h4>{{ user_data.businessName if user_data.businessName else user_data.email}}</h4>
                             <p class="text-secondary mb-1">{{ account_type | capitalize }} Account</p>
                             <p class="text-muted font-size-sm">{{ user_data.street }}, {{ user_data.zipCode }}</p>
                         </div>
