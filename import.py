@@ -5,39 +5,50 @@ from hashlib import sha256
 connection = sqlite3.connect('nittanybusiness.db')
 cursor = connection.cursor()
 
-cursor.executescript('''
+cursor.execute('''
 CREATE TABLE IF NOT EXISTS user (
-    email           TEXT PRIMARY KEY,
+    email           TEXT NOT NULL PRIMARY KEY,
     passwordHash    TEXT NOT NULL
-);
+);''')
 
-CREATE TABLE IF NOT EXISTS helpDesk (
-    email       TEXT PRIMARY KEY,
-    Position    TEXT NOT NULL,
-    FOREIGN KEY (email) REFERENCES user(email)
-);
-
+cursor.execute('''
 CREATE TABLE IF NOT EXISTS cardInfo (
-    number  TEXT PRIMARY KEY,
+    number  TEXT NOT NULL PRIMARY KEY,
     type    TEXT NOT NULL,
     expDate TEXT NOT NULL,
     securityCode TEXT NOT NULL
-);
+);''')
 
+cursor.execute('''
 CREATE TABLE IF NOT EXISTS bankInfo (
-    accountNum  TEXT NOT NULL,
+    accountNum  TEXT NOT NULL PRIMARY KEY,
     routingNum  TEXT NOT NULL,
     balance     INTEGER NOT NULL
-);
+);''')
 
+cursor.execute('''
 CREATE TABLE IF NOT EXISTS zipInfo (
-    zipCode TEXT PRIMARY KEY,
+    zipCode TEXT NOT NULL PRIMARY KEY,
     city    TEXT NOT NULL,
     state   TEXT NOT NULL
-);
+);''')
 
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS helpDesk (
+    email       TEXT NOT NULL PRIMARY KEY,
+    Position    TEXT NOT NULL,
+    FOREIGN KEY (email) REFERENCES user(email)
+);''')
+
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS category (
+    name   TEXT NOT NULL PRIMARY KEY,
+    parent  TEXT NOT NULL
+);''')
+
+cursor.execute('''
 CREATE TABLE IF NOT EXISTS buyer (
-    email       TEXT PRIMARY KEY,
+    email       TEXT NOT NULL PRIMARY KEY,
     street      TEXT NOT NULL,
     zipCode     TEXT NOT NULL,
     businessName    TEXT NOT NULL,
@@ -46,10 +57,11 @@ CREATE TABLE IF NOT EXISTS buyer (
     FOREIGN KEY (email) REFERENCES user(email),
     FOREIGN KEY (cardNum) REFERENCES cardInfo(number),
     FOREIGN KEY (zipCode) REFERENCES zipInfo(zipCode)
-);
+);''')
 
+cursor.execute('''
 CREATE TABLE IF NOT EXISTS seller (
-    email       TEXT PRIMARY KEY,
+    email       TEXT NOT NULL PRIMARY KEY,
     street      TEXT NOT NULL,
     zipCode     TEXT NOT NULL,
     businessName    TEXT NOT NULL,
@@ -59,15 +71,11 @@ CREATE TABLE IF NOT EXISTS seller (
     FOREIGN KEY (bankAccountNum) REFERENCES bankInfo(accountNum),
     FOREIGN KEY (email) REFERENCES user(email),
     FOREIGN KEY (zipCode) REFERENCES zipInfo(zipCode)
-);
+);''')
 
-CREATE TABLE IF NOT EXISTS category (
-    name   TEXT PRIMARY KEY,
-    parent  TEXT NOT NULL
-);
-
+cursor.execute('''
 CREATE TABLE IF NOT EXISTS listing (
-    id          TEXT NOT NULL,
+    id          TEXT NOT NULL PRIMARY KEY,
     sellerEmail TEXT NOT NULL,
     category    TEXT NOT NULL,
     title       TEXT NOT NULL,
@@ -75,9 +83,63 @@ CREATE TABLE IF NOT EXISTS listing (
     description     TEXT NOT NULL,
     quantity        INTEGER NOT NULL,
     price           REAL NOT NULL,
-    activeStatus    INTEGER NOT NULL
-);
-''')
+    activeStatus    INTEGER NOT NULL,
+    FOREIGN KEY (sellerEmail) REFERENCES seller(email),
+    FOREIGN KEY (category) REFERENCES category(name)
+);''')
+
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS rating (
+    authorEmail     TEXT NOT NULL,
+    recipientEmail  TEXT NOT NULL,
+    rating          REAL NOT NULL,
+    PRIMARY KEY (authorEmail, recipientEmail),
+    FOREIGN KEY (authorEmail) REFERENCES user(email),
+    FOREIGN KEY (recipientEmail) REFERENCES user(email)
+);''')
+
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS review (
+    buyerEmail  TEXT NOT NULL,
+    listingId   TEXT NOT NULL,
+    body TEXT NOT NULL,
+    rating REAL NOT NULL,
+    PRIMARY KEY (buyerEmail, listingId),
+    FOREIGN KEY (buyerEmail) REFERENCES buyer(email),
+    FOREIGN KEY (listingId) REFERENCES listing(id)
+);''')
+
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS question (
+    listingId   INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    buyerEmail  TEXT NOT NULL,
+    body        TEXT NOT NULL,
+    answer      TEXT NOT NULL,
+    FOREIGN KEY (listingId) REFERENCES listing(id),
+    FOREIGN KEY (buyerEmail) REFERENCES buyer(email)
+);''')
+
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS purchase (
+    purchaseId   INTEGER PRIMARY KEY AUTOINCREMENT,
+    buyerEmail      TEXT NOT NULL,
+    listingId       TEXT NOT NULL,
+    quantity        INTEGER NOT NULL,
+    unitPrice       REAL NOT NULL,
+    activeStatus    INTEGER NOT NULL,
+    FOREIGN KEY (buyerEmail) REFERENCES buyer(email),
+    FOREIGN KEY (listingId) REFERENCES listing(id)
+);''')
+
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS cart (
+    buyerEmail  TEXT NOT NULL,
+    listingId   TEXT NOT NULL,
+    quantity    INTEGER NOT NULL,
+    PRIMARY KEY (buyerEmail, listingId),
+    FOREIGN KEY (buyerEmail) REFERENCES buyer(email),
+    FOREIGN KEY (listingId) REFERENCES listing(id)
+);''')
 
 
 with open('./data/Users.csv', newline='') as f:
