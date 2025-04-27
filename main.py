@@ -184,7 +184,6 @@ def valid_user(email, password):
         return True
     return False
 
-
 @app.route('/logout', methods=['POST', 'GET'])
 def logout():
     # checks if email is in session, if is then pop (remove from session) which logs out
@@ -193,19 +192,17 @@ def logout():
         print('Logged out')
     return redirect(url_for('login'))
 
-
 # helper function to read the categories for creation of tree
-def read_categories(filepath):
+def read_categories():
     categories = []
-    # open the csv and read every line from Categories.csv
-    with open(filepath, newline='') as csvfile:
-        reader = csv.DictReader(csvfile)
-        reader.fieldnames = [field.strip() for field in reader.fieldnames]
 
-        for row in reader:
-            # append each category name and parent category to the dictionary so we can create a tree with this returned data
-            categories.append(
-                dict(category_name=row['category_name'].strip(), parent_category=row['parent_category'].strip()))
+    # query all the categories from the database
+    rows = query_db('SELECT name, parent FROM category')
+
+    for row in rows:
+        # append each category name and parent category to the dictionary so we can create a tree with this returned data
+        categories.append(
+            dict(category_name=row['name'].strip(), parent_category=row['parent'].strip()))
     return categories
 
 # function to create the category tree hierarchy
@@ -213,9 +210,9 @@ def make_tree(categories, parent="Root"):
     tree = {}
     # iterate through the categories
     for row in categories:
-        # if one of the rows in the parent_category is a parent then set the child category
-        # and recursively go through the tree
-        # first iteration will be "Root", second will be first parent found, etc
+        # checks the categories dictionary to see if one of the rows is a parent then set the
+        # child category and recursively go through the tree.
+        # (first iteration will be "Root", second will be first parent found)
         if row["parent_category"] == parent:
             category = row['category_name']
             tree[category] = make_tree(categories, parent=category)
@@ -223,16 +220,15 @@ def make_tree(categories, parent="Root"):
     # at the end, return the tree
     return tree
 
-def read_products(filepath):
+def read_products():
     products = []
-    # open the csv and read every line from Product_Listings.csv
-    with open(filepath, newline='') as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            # append each product name, title, description, price, rating(hardcoded rn), and category to dictionary to return data
-            products.append(dict(name=row['Product_Name'].strip(), title=row['Product_Title'].strip(),
-                                 description=row['Product_Description'].strip(), price=row['Product_Price'].strip(),
-                                 rating=5, category=row['Category'].strip()))
+
+    # query all product listings from the db
+    rows = query_db('SELECT name, title, description, price, category FROM listing')
+    for row in rows:
+        # append each product name, title, description, price, rating(hardcoded rn), and category to dictionary to return data
+        products.append(dict(name=row['name'].strip(), title=row['title'].strip(), description=row['description'].strip(),
+                             price=row['price'], rating=5, category=row['category'].strip()))
     return products
 
 def get_all_subcategories(category_path, tree):
@@ -320,10 +316,10 @@ def search():
     # else:
 
     # read the categories from the csv and make the tree based off of it
-    categories = read_categories('data/Categories.csv')
+    categories = read_categories()
     category_tree = make_tree(categories)
     # read the product listings from the csv
-    products = read_products('data/Product_Listings.csv')
+    products = read_products()
     # debug to see if the category tree is correct
     print("Category Tree:", category_tree)
 
@@ -353,6 +349,7 @@ def search():
 
     return render_template('search.html', category_tree=category_tree, products=filtered_products, selected_category=selected_category, search_query=search_query, listing_ratings=listing_ratings)
 
+# helper function to help find the account type of the user based on the email
 def find_account_type(email):
     # check if email is in sellers table in the db
     seller = query_db('SELECT * FROM seller WHERE email=?', [email], one=True)
@@ -372,7 +369,7 @@ def find_account_type(email):
     # no account type is found
     return 'anonymous'
 
-
+# helper function to load all the user data for the profile pages
 def load_user_data(email, account_type):
     user_data = {}
 
