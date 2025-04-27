@@ -2,16 +2,70 @@
 {% block title %}Orders{% endblock %}
 
 {% block head %}
+<style>
+    .orders-container {
+        margin-top: 2rem;
+        padding: 1rem;
+        background-color: #f8f9fa;
+        min-height: 500px;
+        overflow-y: auto;
+    }
+
+    .order-item {
+        background-color: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .order-header {
+        font-weight: bold;
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .order-details {
+        font-size: 0.95rem;
+        color: #555;
+    }
+</style>
 {% endblock %}
 
 {% block body %}
-    <div class="container">
-        <h1>Orders</h1>
+<div class="container">
+    <h1>{{ account_type.capitalize() }} Orders</h1>
+
+    <div class="orders-container">
+        {% if orders %}
+            {% for order in orders %}
+                <div class="order-item">
+                    <div class="order-header">Order ID: {{ order['Order_ID'] }}</div>
+                    <div class="order-details">
+                        <strong>Listing ID:</strong> {{ order['Listing_ID'] }}<br>
+                        {% if account_type == 'buyer' %}
+                            <strong>Seller Email:</strong> {{ order['Seller_Email'] }}<br>
+                        {% elif account_type == 'seller' %}
+                            <strong>Buyer Email:</strong> {{ order['Buyer_Email'] }}<br>
+                        {% endif %}
+                        <strong>Quantity:</strong> {{ order['Quantity'] }}<br>
+                        <strong>Price Paid:</strong> ${{ order['Price_Paid'] }}<br>
+                        <strong>Order Date:</strong> {{ order['Order_Date'] }}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No orders found.</p>
+        {% endif %}
     </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
-    <script>
-
-    </script>
+<script>
+    // (no scripts needed here for now)
+</script>
 {% endblock %}
