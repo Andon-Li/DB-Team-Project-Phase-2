@@ -110,7 +110,7 @@ CREATE TABLE IF NOT EXISTS question (
 
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS purchase (
-    id   INTEGER PRIMARY KEY AUTOINCREMENT,
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
     buyerEmail      TEXT NOT NULL,
     listingId       TEXT NOT NULL,
     quantity        INTEGER NOT NULL,
@@ -122,12 +122,9 @@ CREATE TABLE IF NOT EXISTS purchase (
 
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS review (
-    buyerEmail  TEXT NOT NULL,
-    purchaseId   TEXT NOT NULL,
+    purchaseId   TEXT NOT NULL PRIMARY KEY,
     body TEXT NOT NULL,
     rating REAL NOT NULL,
-    PRIMARY KEY (buyerEmail, listingId),
-    FOREIGN KEY (buyerEmail) REFERENCES buyer(email),
     FOREIGN KEY (purchaseId) REFERENCES purchase(id)
 );''')
 
@@ -277,6 +274,14 @@ with open('data/Product_Listings.csv', newline='') as f:
         ''', (row['Listing_ID'], row['Seller_Email'], row['Category'], row['Product_Title'], row['Product_Title'], 
                 row['Product_Description'], row['Quantity'], row['Product_Price'], 1))
 
+with open('data/Orders.csv', newline='') as f:
+    reader = csv.DictReader(f)
+    reader.fieldnames[0] = reader.fieldnames[0].lstrip('\ufeff')
+
+    for row in reader:
+        cursor.execute('''
+        
+        ''')
 
 
 
