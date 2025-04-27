@@ -1,5 +1,5 @@
 from flask import Flask, render_template, session, request, redirect, url_for, g
-
+from collections import defaultdict
 import csv
 import sqlite3
 from hashlib import sha256
@@ -208,7 +208,6 @@ def read_categories(filepath):
                 dict(category_name=row['category_name'].strip(), parent_category=row['parent_category'].strip()))
     return categories
 
-
 # function to create the category tree hierarchy
 def make_tree(categories, parent="Root"):
     tree = {}
@@ -222,7 +221,6 @@ def make_tree(categories, parent="Root"):
 
     # return the tree
     return tree
-
 
 def read_products(filepath):
     products = []
@@ -269,6 +267,50 @@ def get_all_subcategories(category_path, tree):
 
     return subcategories
 
+def load_listings_ratings():
+    listings = []
+    orders = []
+    reviews = []
+
+    with open('data/Product_Listings.csv', 'r', newline='', encoding='utf-8') as csvfile:
+        read_listings = csv.DictReader(csvfile)
+        listings = list(read_listings)
+
+    with open('data/Orders.csv', 'r', newline='', encoding='utf-8') as csvfile:
+        read_orders = csv.DictReader(csvfile)
+        orders = list(read_orders)
+
+    with open('data/Reviews.csv', 'r', newline='', encoding='utf-8') as csvfile:
+        read_reviews = csv.DictReader(csvfile)
+        reviews = list(read_reviews)
+
+    reviews_by_orderid = {review['Order_ID']: review for review in reviews}
+
+    order_reviews = []
+    for order in orders:
+        orderid = order['Order_ID']
+        if orderid in reviews_by_orderid:
+            combined = {
+                'Listing_ID': order['Listing_ID'],
+                'Rate': float(reviews_by_orderid[orderid]['Rate'])
+            }
+            order_reviews.append(combined)
+
+    ratings_sum = defaultdict(float)
+    ratings_count = defaultdict(int)
+
+    for review in order_reviews:
+        listing_id = review['Listing_ID']
+        rate = review['Rate']
+        ratings_sum[listing_id] += rate
+        ratings_count[listing_id] += 1
+
+    listing_ratings = {}
+    for listing_id in ratings_sum:
+        listing_ratings[listing_id] = ratings_sum[listing_id] / ratings_count[listing_id]
+
+    return listing_ratings
+
 @app.route('/search')
 def search():
     # implement this when signup is complete
@@ -290,8 +332,9 @@ def search():
     # debug to see if query and category are showing correctly
     print(f"Query: {search_query}, Category: {selected_category}")
 
-    # initialize filtered_products to all of the product listings by default
+    # initialize filtered_products and their ratings to all of the product listings by default
     filtered_products = products
+    listing_ratings = load_listings_ratings()
 
     # implement functionality for selecting a category and showing all of its products
     # when a category is selected, get all the subcategories
@@ -307,7 +350,7 @@ def search():
     if search_query:
         filtered_products = [product for product in filtered_products if search_query in product['title'].lower() or search_query in product['description'].lower() or search_query in product['category'].lower()]
 
-    return render_template('search.html', category_tree=category_tree, products=filtered_products, selected_category=selected_category, search_query=search_query)
+    return render_template('search.html', category_tree=category_tree, products=filtered_products, selected_category=selected_category, search_query=search_query, listing_ratings=listing_ratings)
 
 @app.route('/profile')
 def anon_profile():
@@ -322,7 +365,7 @@ def profile(email):
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    return f'you are logged in with the email: {email}'
+    return render_template('profile.html', email=email)
 
 
 @app.route('/error')

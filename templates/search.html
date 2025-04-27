@@ -201,9 +201,7 @@
         <button type="submit" class="search-button">🔍</button>
     </form>
 
-    <div class="results-container" id="results-container">
-
-    </div>
+    <div class="results-container" id="results-container"></div>
 {% endblock %}
 
 {% block scripts %}
@@ -349,8 +347,9 @@
                 });
             });
 
-            // fetch product listings from flask (main.py)
+            // fetch product listings and ratings from flask (main.py)
             const products = {{ products | tojson }}
+            const productRatings = {{ listing_ratings | tojson }}
             // try printing to console (hopefully it shows up)
             console.log("Products being displayed: ", products);
             const container = document.getElementById("results-container");
@@ -369,6 +368,11 @@
                 const listing = document.createElement('div');
                 // need same class name for styling
                 listing.className = 'results-item';
+
+                // find the rating from the productRatings dict
+                const rating = productRatings[product.listing_id];
+                const ratingText = rating ? `${rating}` : '';
+
                 // sets all the html dynamically for each product
                 listing.innerHTML =
                     `<!-- left section for name and price -->
@@ -387,7 +391,7 @@
                     </div>
 
                     <!-- product rating -->
-                    <div class="product-rating">Rating: ${product.rating}</div>`
+                    <div class="product-rating">${ratingText}</div>`
                 ;
                 // add the product listing to the container
                 container.appendChild(listing);
