@@ -431,12 +431,16 @@ def profile(email):
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    #email = session['email']
+    # have to implement feature so that it can tell for now accounts what the account type is
+    # from the db
     account_type = find_account_type(email)
     user_data = load_user_data(email, account_type)
 
     return render_template('profile.html', email=email, user_data=user_data, account_type=account_type)
 
+@app.route('/order')
+def order():
+    return render_template('orders.html')
 
 @app.route('/error')
 def error():
