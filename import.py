@@ -99,17 +99,6 @@ CREATE TABLE IF NOT EXISTS rating (
 );''')
 
 cursor.execute('''
-CREATE TABLE IF NOT EXISTS review (
-    buyerEmail  TEXT NOT NULL,
-    listingId   TEXT NOT NULL,
-    body TEXT NOT NULL,
-    rating REAL NOT NULL,
-    PRIMARY KEY (buyerEmail, listingId),
-    FOREIGN KEY (buyerEmail) REFERENCES buyer(email),
-    FOREIGN KEY (listingId) REFERENCES listing(id)
-);''')
-
-cursor.execute('''
 CREATE TABLE IF NOT EXISTS question (
     listingId   INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     buyerEmail  TEXT NOT NULL,
@@ -121,7 +110,7 @@ CREATE TABLE IF NOT EXISTS question (
 
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS purchase (
-    purchaseId   INTEGER PRIMARY KEY AUTOINCREMENT,
+    id   INTEGER PRIMARY KEY AUTOINCREMENT,
     buyerEmail      TEXT NOT NULL,
     listingId       TEXT NOT NULL,
     quantity        INTEGER NOT NULL,
@@ -129,6 +118,17 @@ CREATE TABLE IF NOT EXISTS purchase (
     activeStatus    INTEGER NOT NULL,
     FOREIGN KEY (buyerEmail) REFERENCES buyer(email),
     FOREIGN KEY (listingId) REFERENCES listing(id)
+);''')
+
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS review (
+    buyerEmail  TEXT NOT NULL,
+    purchaseId   TEXT NOT NULL,
+    body TEXT NOT NULL,
+    rating REAL NOT NULL,
+    PRIMARY KEY (buyerEmail, listingId),
+    FOREIGN KEY (buyerEmail) REFERENCES buyer(email),
+    FOREIGN KEY (purchaseId) REFERENCES purchase(id)
 );''')
 
 cursor.execute('''
