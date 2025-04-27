@@ -56,9 +56,26 @@ CREATE TABLE IF NOT EXISTS seller (
     activeStatus    INTEGER NOT NULL,
     csNum           TEXT NOT NULL,
     bankAccountNum  TEXT NOT NULL,
-    FOREIGN KEY (bankAccountNum) REFERENCES bankInfo(accountNum)
+    FOREIGN KEY (bankAccountNum) REFERENCES bankInfo(accountNum),
     FOREIGN KEY (email) REFERENCES user(email),
     FOREIGN KEY (zipCode) REFERENCES zipInfo(zipCode)
+);
+
+CREATE TABLE IF NOT EXISTS category (
+    name   TEXT PRIMARY KEY,
+    parent  TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS listing (
+    id          TEXT NOT NULL,
+    sellerEmail TEXT NOT NULL,
+    category    TEXT NOT NULL,
+    title       TEXT NOT NULL,
+    name        TEXT NOT NULL,
+    description     TEXT NOT NULL,
+    quantity        INTEGER NOT NULL,
+    price           REAL NOT NULL,
+    activeStatus    INTEGER NOT NULL
 );
 ''')
 
@@ -156,5 +173,49 @@ with open('./data/Sellers.csv', newline='') as f:
         cursor.execute('''
             INSERT INTO bankInfo VALUES (?, ?, ?)
         ''', (row['bank_account_number'], row['bank_routing_number'], row['balance']))
+
+
+with open('data/Categories.csv', newline='') as f:
+    # parent_category,category_name
+    
+    reader = csv.DictReader(f)
+    reader.fieldnames[0] = reader.fieldnames[0].lstrip('\ufeff')
+
+    for row in reader:
+        cursor.execute('''
+            INSERT INTO category VALUES (?, ?)
+        ''', (row['category_name'], row['parent_category']))
+
+
+with open('data/Product_Listings.csv', newline='') as f:
+    # Seller_Email,Listing_ID,Category,Product_Title,Product_Name,Product_Description,Quantity,Product_Price,Status
+    
+    reader = csv.DictReader(f)
+    reader.fieldnames[0] = reader.fieldnames[0].lstrip('\ufeff')
+    for row in reader:
+        for fieldname in reader.fieldnames:
+            value = row[fieldname]
+
+            if value[0] == '\"':
+                value = value[1:-1]
+
+            value = value.replace('\"\"', '\"')
+
+            if value.find('$') >= 0:
+                value = value.strip('$,')
+
+            value = value.strip('?')
+            value = value.strip()
+
+            row[fieldname] = value
+        
+
+        cursor.execute('''
+            INSERT INTO listing VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (row['Listing_ID'], row['Seller_Email'], row['Category'], row['Product_Title'], row['Product_Title'], 
+                row['Product_Description'], row['Quantity'], row['Product_Price'], 1))
+
+
+
 
 connection.commit()
