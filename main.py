@@ -399,65 +399,46 @@ def load_user_data(email, account_type):
     return user_data
 
 # helper function to load all reviews
-def get_reviews(accountType, entityId):
+def get_reviews(type, id):
     reviews = []
 
-    if accountType == 'buyer':
-        # Buyers: Can only see reviews they have written
+    if type == 'buyer':
+        # Buyers: See reviews they have written
         rows = query_db('''
-                SELECT listing.title AS product_name, review.rating, review.body
-                FROM review
-                JOIN purchase ON review.purchaseId = purchase.id
-                JOIN listing ON purchase.listingId = listing.id
-                WHERE purchase.buyerEmail = ?
-        ''', [entityId])
+            SELECT listing.title AS product_name, review.rating, review.body
+            FROM review
+            JOIN purchase ON review.purchaseId = purchase.id
+            JOIN listing ON purchase.listingId = listing.id
+            WHERE purchase.buyerEmail = ?
+        ''', [id])
 
-        if rows:
-            for row in rows:
-                reviews.append({
-                    'product_name': row['product_name'].strip() if row['product_name'] else '',
-                    'rating': row['rating'],
-                    'body': row['body'].strip() if row['body'] else ''
-                })
+        for row in rows:
+            reviews.append({
+                'product_name': row['product_name'].strip() if row['product_name'] else '',
+                'rating': row['rating'],
+                'body': row['body'].strip() if row['body'] else ''
+            })
 
-    elif accountType == 'seller':
-        # Sellers: Can see reviews left on products they are selling and who left them
+    elif type == 'seller':
+        # Sellers: See reviews left on their products
         rows = query_db('''
             SELECT listing.title AS product_name, review.rating, review.body, purchase.buyerEmail AS buyer_email
             FROM review
             JOIN purchase ON review.purchaseId = purchase.id
             JOIN listing ON purchase.listingId = listing.id
             WHERE listing.sellerEmail = ?
-        ''', [session['email']])
+        ''', [id])
 
-        if rows:
-            for row in rows:
-                reviews.append({
-                    'product_name': row['product_name'].strip() if row['product_name'] else '',
-                    'rating': row['rating'],
-                    'body': row['body'].strip() if row['body'] else '',
-                    'buyer_email': row['buyer_email'].strip() if row['buyer_email'] else ''
-                })
-
-    elif accountType == 'product':
-        # used to get the ratings of specific products for product listing pages
-        rows = query_db('''
-            SELECT review.rating, review.body, purchase.buyerEmail
-            FROM review
-            JOIN purchase ON review.purchaseId = purchase.id
-            JOIN listing ON purchase.listingId = listing.id
-            WHERE listing.title = ?
-        ''', [entityId])
-
-        if rows:
-            for row in rows:
-                reviews.append({
-                    'rating': row['rating'],
-                    'body': row['body'].strip() if row['body'] else '',
-                    'buyer_email': row['buyerEmail'].strip() if row['buyerEmail'] else ''
-                })
+        for row in rows:
+            reviews.append({
+                'product_name': row['product_name'].strip() if row['product_name'] else '',
+                'rating': row['rating'],
+                'body': row['body'].strip() if row['body'] else '',
+                'buyer_email': row['buyer_email'].strip() if row['buyer_email'] else ''
+            })
 
     return reviews
+
 
 @app.route('/submit_review', methods=['POST'])
 def submit_review():
@@ -496,9 +477,17 @@ def profile(email):
 
     account_type = find_account_type(email)
     user_data = load_user_data(email, account_type)
-    reviews = get_reviews(account_type, email)
+
+    # Fetch reviews according to account type
+    if account_type == 'buyer':
+        reviews = get_reviews('buyer', email)
+    elif account_type == 'seller':
+        reviews = get_reviews('seller', email)
+    else:
+        reviews = []
 
     return render_template('profile.html', email=email, user_data=user_data, account_type=account_type, reviews=reviews)
+
 
 
 
