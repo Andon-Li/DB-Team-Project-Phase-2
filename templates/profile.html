@@ -95,6 +95,22 @@
                         </div>
                     </div>
                 </div>
+                {% if account_type != "helpdesk" %}
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="d-flex align-items-center mb-3">
+                                <i class="material-icons text-info mr-2">Reviews</i>
+                            </h6>
+                            {% if reviews %}
+                                {% for review in reviews %}
+                                <small>{{ review.title }}</small>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-muted">No reviews available.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
             </div>
         </div>
 {% endblock %}

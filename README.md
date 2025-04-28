@@ -150,11 +150,11 @@ Users can search for listings by Title, Seller, Category, and Rating.
 1. User Login - 10 pts ✅
 2. Category Hierarchy - 10 pts ✅
 3. Product Listing Management - 10 pts
-4. Order Management - 10 pts
-5. Product & Seller Review - 10 pts
+4. Order Management - 10 pts 
+5. Product & Seller Review - 10 pts 
 6. Product Search - 10 pts ✅
 7. User Registration - 10 pts ✅
-8. User Profile Update - 10 pts
+8. User Profile Update - 10 pts ✅
 
 ### Code submission - 5 pts
 

@@ -440,34 +440,46 @@ def edit_profile():
     if 'email' not in session:
         return redirect(url_for('login'))
 
+    # get email and account type for the session
     email = session['email']
     account_type = session.get('account_type')
 
+    # if in POST method
     if request.method == 'POST':
+        # overlapping fields for seller and buyer and get changes from form
         street = request.form.get('street')
         zipCode = request.form.get('zipCode')
         businessName = request.form.get('businessName')
+
+        # if account is seller type
         if account_type == 'seller':
-            print(f"Updating seller data for {email}")
+            # get seller specific info in phone number and bank acc num
             csNum = request.form.get('csNum')
             bankAccountNum = request.form.get('bankAccountNum')
+            # query the db updating all info we can change
             query_db(
                 '''UPDATE seller SET street = ?, zipCode = ?, businessName = ?, csNum = ?, bankAccountNum = ? WHERE email = ?''',
                 [street, zipCode, businessName, csNum, bankAccountNum, email], commit=True)
+
+        # if account is buyer type
         elif account_type == 'buyer':
-            print(f"Updating buyer data for {email}")
+            # get buyer specific info in cardNum
             cardNum = request.form.get('cardNum')
+            # query the db updating all info we can change
             query_db('''UPDATE buyer SET street = ?, zipCode = ?, businessName = ?, cardNum = ? WHERE email = ?''',
                      [street, zipCode, businessName, cardNum, email], commit=True)
+
+        # if account is helpdesk type
         elif account_type == 'helpdesk':
-            print(f"Updating helpdesk data for {email}")
+            # get helpdesk specific info in position
             position = request.form.get('position')
+            # query the db updating all info we can change (just position)
             query_db('''UPDATE helpdesk SET position = ? WHERE email = ?''',
                      [position, email], commit=True)
 
         return redirect(url_for('profile', email=email))
 
-    # otherwise its a GET request
+    # otherwise its a GET request so load the user data and return the page
     user_data = load_user_data(email, account_type)
     return render_template('edit_profile.html', user_data=user_data, account_type=account_type)
 
