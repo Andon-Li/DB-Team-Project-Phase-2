@@ -1,5 +1,3 @@
-import email
-
 from flask import Flask, render_template, session, request, redirect, url_for, g
 from collections import defaultdict
 import csv
@@ -280,15 +278,19 @@ def get_all_subcategories(category_path, tree):
 
     return subcategories
 
-@app.route('/listing/<product_title>')
+@app.route('/listing/<product_title>', methods=['GET', 'POST'])
 def listing_detail(product_title):
-    product_title = product_title.replace('-', ' ')
-    product = find_product_by_title(product_title)
-    if product:
-        reviews = get_reviews('product', product_title)
-        return render_template('listing_detail.html', product=product, reviews=reviews)
+    if request.method == 'GET':
+        product_title = product_title.replace('-', ' ')
+        product = find_product_by_title(product_title)
+        if product:
+            reviews = get_reviews('product', product_title)
+            return render_template('listing_detail.html', product=product, reviews=reviews)
+        else:
+            return render_template('error.html', errorMessage="Product not found."), 404
+    
     else:
-        return render_template('error.html', errorMessage="Product not found."), 404
+        pass
 
 @app.route('/search')
 def search():
@@ -397,10 +399,10 @@ def load_user_data(email, account_type):
     return user_data
 
 # helper function to load all reviews
-def get_reviews(type, id):
+def get_reviews(accountType, entityId):
     reviews = []
 
-    if type == 'buyer':
+    if accountType == 'buyer':
         # Buyers: Can only see reviews they have written
         rows = query_db('''
                 SELECT listing.title AS product_name, review.rating, review.body
@@ -408,7 +410,7 @@ def get_reviews(type, id):
                 JOIN purchase ON review.purchaseId = purchase.id
                 JOIN listing ON purchase.listingId = listing.id
                 WHERE purchase.buyerEmail = ?
-        ''', [id])
+        ''', [entityId])
 
         if rows:
             for row in rows:
@@ -418,7 +420,7 @@ def get_reviews(type, id):
                     'body': row['body'].strip() if row['body'] else ''
                 })
 
-    elif type == 'seller':
+    elif accountType == 'seller':
         # Sellers: Can see reviews left on products they are selling and who left them
         rows = query_db('''
             SELECT listing.title AS product_name, review.rating, review.body, purchase.buyerEmail AS buyer_email
@@ -426,7 +428,7 @@ def get_reviews(type, id):
             JOIN purchase ON review.purchaseId = purchase.id
             JOIN listing ON purchase.listingId = listing.id
             WHERE listing.sellerEmail = ?
-        ''', [email])
+        ''', [session['email']])
 
         if rows:
             for row in rows:
@@ -437,7 +439,7 @@ def get_reviews(type, id):
                     'buyer_email': row['buyer_email'].strip() if row['buyer_email'] else ''
                 })
 
-    elif type == 'product':
+    elif accountType == 'product':
         # used to get the ratings of specific products for product listing pages
         rows = query_db('''
             SELECT review.rating, review.body, purchase.buyerEmail
@@ -445,7 +447,7 @@ def get_reviews(type, id):
             JOIN purchase ON review.purchaseId = purchase.id
             JOIN listing ON purchase.listingId = listing.id
             WHERE listing.title = ?
-        ''', [id])
+        ''', [entityId])
 
         if rows:
             for row in rows:
@@ -580,6 +582,20 @@ def order():
 
     return render_template('orders.html', orders=orders, account_type=account_type)
 
+
+@app.route('/cart')
+def cart():
+    if 'email' not in session:
+        return redirect(url_for('login'))
+    
+    if find_account_type(session['email']) != 'buyer':
+        return redirect(url_for('profile'))
+    
+    carted_listings = query_db('''
+        SELECT * FROM cart WHERE buyerEmail=?
+    ''', (session['email'],))
+    print(carted_listings)
+    return render_template('cart.html', cartedListings=carted_listings)
 
 @app.route('/error')
 def error():
