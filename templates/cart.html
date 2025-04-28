@@ -18,6 +18,9 @@
                 <strong>Seller Email:</strong> {{ listing['sellerEmail'] }}<br>
                 <strong>Quantity:</strong> {{ listing['quantity'] }}<br>
                 <strong>Unit Price:</strong> ${{ listing['price'] }}<br>
+                <form action="{{ url_for('remove_from_cart') }}" method="POST" style="display:inline;">
+                    <input type="hidden" name="listingId" value="{{ listing['id'] }}">
+                    <button type="submit">Remove</button>
             </div>
             <hr>
         {% endfor %}

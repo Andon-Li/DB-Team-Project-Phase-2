@@ -692,6 +692,18 @@ def cart():
         return render_template('cart.html', listingsData=listings_data, priceTotal=price_total,
                             quantityTotal = quantity_total, cardLast4=card_last_4[0][-4:])
 
+
+@app.route('/remove_from_cart', methods=['POST'])
+def remove_from_cart():
+    listingId = request.form['listingId']
+    query_db('''
+       DELETE FROM cart
+       WHERE buyerEmail = ? AND listingId = ? 
+    ''', (session['email'], listingId), commit=True)
+    
+    return redirect(url_for('cart'))
+
+
 @app.route('/edit_listing/<int:listing_id>', methods=['GET', 'POST'])
 def edit_listing(listing_id):
     if 'email' not in session:
