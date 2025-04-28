@@ -12,14 +12,12 @@
     {% if listingsData %}
         {% for listing in listingsData %}
             <div class="cart-listing">
-                <div class="order-details">
-                    <strong>Listing ID:</strong> {{ listing['id'] }}<br>
-                    <strong>Product Title:</strong> {{ listing['title'] }}<br>
-                    <strong>Product Name:</strong> {{ listing['name'] }}<br>
-                    <strong>Seller Email:</strong> {{ listing['sellerEmail'] }}<br>
-                    <strong>Quantity:</strong> {{ listing['quantity'] }}<br>
-                    <strong>Unit Price:</strong> ${{ listing['price'] }}<br>
-                </div>
+                <strong>Listing ID:</strong> {{ listing['id'] }}<br>
+                <strong>Product Title:</strong> {{ listing['title'] }}<br>
+                <strong>Product Name:</strong> {{ listing['name'] }}<br>
+                <strong>Seller Email:</strong> {{ listing['sellerEmail'] }}<br>
+                <strong>Quantity:</strong> {{ listing['quantity'] }}<br>
+                <strong>Unit Price:</strong> ${{ listing['price'] }}<br>
             </div>
             <hr>
         {% endfor %}

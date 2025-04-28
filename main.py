@@ -681,6 +681,11 @@ def cart():
             ''', (session['email'], listing['id'], listing['quantity'], 
                         (listing['price']*listing['quantity']), 1), commit=True)
 
+            query_db('''
+                DELETE FROM cart
+                WHERE buyerEmail = ?
+            ''', (session['email'],), commit=True)
+
         return redirect(url_for('anon_profile'))
     
     if request.method == 'GET':
