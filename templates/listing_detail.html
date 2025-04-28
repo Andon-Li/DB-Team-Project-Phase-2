@@ -21,9 +21,10 @@
         </form>
         {% endif %}
 
-        {% if account_type.lower() == 'seller' or account_type.lower() == 'helpdesk' %}
-            <a href="{{ url_for('edit_listing', listing_id=listing['id']) }}" class="btn btn-primary mt-3">Edit Listing</a>
+        {% if account_type.lower() == 'helpdesk' or (account_type.lower() == 'seller' and listing['sellerEmail'] == session['email']) %}
+             <a href="{{ url_for('edit_listing', listing_id=listing['id']) }}" class="btn btn-primary mt-3">Edit Listing</a>
         {% endif %}
+
 
         <hr>
 
