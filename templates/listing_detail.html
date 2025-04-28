@@ -7,10 +7,11 @@
 {% block body %}
     <div class="container mt-5">
         <h1>{{ listing['title'] }}</h1>
-        <p><strong>Listing Name:</strong> {{ listing['name'] }}</p>
-        <p><strong>Description:</strong> {{ listing['description'] }}</p>
-        <p><strong>Price:</strong> ${{ listing['price'] }}</p>
         <p><strong>Category:</strong> {{ listing['category'] }}</p>
+        <p><strong>Description:</strong> {{ listing['description'] }}</p>
+        <p><strong>Price:</strong> ${{ '%.2f' % listing['price'] }}</p>
+        <p><strong>Category:</strong> {{ listing['quantity'] }}</p>
+
 
         {% if account_type.lower() == 'buyer' %}
         <form method="POST">
