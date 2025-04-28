@@ -241,6 +241,12 @@ def read_products():
     return products
 
 
+def find_product_by_title(title):
+    # query straight from the listing table in the db
+    product = query_db('SELECT * FROM listing WHERE title = ?', [title], one=True)
+    return product
+
+
 def get_all_subcategories(category_path, tree):
     subcategories = []
 
@@ -274,58 +280,17 @@ def get_all_subcategories(category_path, tree):
 
     return subcategories
 
-
-def load_listings_ratings():
-    listings = []
-    orders = []
-    reviews = []
-
-    with open('data/Product_Listings.csv', 'r', newline='', encoding='utf-8') as csvfile:
-        read_listings = csv.DictReader(csvfile)
-        listings = list(read_listings)
-
-    with open('data/Orders.csv', 'r', newline='', encoding='utf-8') as csvfile:
-        read_orders = csv.DictReader(csvfile)
-        orders = list(read_orders)
-
-    with open('data/Reviews.csv', 'r', newline='', encoding='utf-8') as csvfile:
-        read_reviews = csv.DictReader(csvfile)
-        reviews = list(read_reviews)
-
-    reviews_by_orderid = {review['Order_ID']: review for review in reviews}
-
-    order_reviews = []
-    for order in orders:
-        orderid = order['Order_ID']
-        if orderid in reviews_by_orderid:
-            combined = {
-                'Listing_ID': order['Listing_ID'],
-                'Rate': float(reviews_by_orderid[orderid]['Rate'])
-            }
-            order_reviews.append(combined)
-
-    ratings_sum = defaultdict(float)
-    ratings_count = defaultdict(int)
-
-    for review in order_reviews:
-        listing_id = review['Listing_ID']
-        rate = review['Rate']
-        ratings_sum[listing_id] += rate
-        ratings_count[listing_id] += 1
-
-    listing_ratings = {}
-    for listing_id in ratings_sum:
-        listing_ratings[listing_id] = ratings_sum[listing_id] / ratings_count[listing_id]
-
-    return listing_ratings
-
+@app.route('/listing/<product_title>')
+def listing_detail(product_title):
+    product_title = product_title.replace('-', ' ')
+    product = find_product_by_title(product_title)
+    if product:
+        return render_template('listing_detail.html', product=product)
+    else:
+        return render_template('error.html', errorMessage="Product not found."), 404
 
 @app.route('/search')
 def search():
-    # implement this when signup is complete
-    # if 'email' not in session:
-    #    return redirect(url_for('login'))
-    # else:
 
     # read the categories from the csv and make the tree based off of it
     categories = read_categories()
@@ -343,7 +308,6 @@ def search():
 
     # initialize filtered_products and their ratings to all of the product listings by default
     filtered_products = products
-    listing_ratings = load_listings_ratings()
 
     # implement functionality for selecting a category and showing all of its products
     # when a category is selected, get all the subcategories
@@ -363,9 +327,7 @@ def search():
                                  'description'].lower() or search_query in product['category'].lower()]
 
     return render_template('search.html', category_tree=category_tree, products=filtered_products,
-                           selected_category=selected_category, search_query=search_query,
-                           listing_ratings=listing_ratings)
-
+                           selected_category=selected_category, search_query=search_query)
 
 # helper function to help find the account type of the user based on the email
 def find_account_type(email):
@@ -433,7 +395,6 @@ def load_user_data(email, account_type):
         return None
 
     return user_data
-
 
 @app.route('/profile')
 def anon_profile():

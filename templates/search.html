@@ -191,14 +191,14 @@
 
     <form class="search-form" action="/search" method="GET">
         <div class="category-dropdown">
-            <div class="dropdown-toggle" id="dropdownMenuButton">Select Category</div>
+            <div class="dropdown-toggle ml-3" id="dropdownMenuButton">Select Category</div>
             <ul class="main-dropdown" id="category-menu"></ul>
             <!-- Used as hidden input field to click on the category-->
             <input type="hidden" name="category" id="selected-category" value="">
         </div>
         <input type="text" class="search-input" name="query" placeholder="Search keywords..." value="{{ search_query }}">
 
-        <button type="submit" class="search-button">🔍</button>
+        <button type="submit" class="search-button mr-3">🔍</button>
     </form>
 
     <div class="results-container" id="results-container"></div>
@@ -349,7 +349,6 @@
 
             // fetch product listings and ratings from flask (main.py)
             const products = {{ products | tojson }}
-            const productRatings = {{ listing_ratings | tojson }}
             // try printing to console (hopefully it shows up)
             console.log("Products being displayed: ", products);
             const container = document.getElementById("results-container");
@@ -368,10 +367,13 @@
                 const listing = document.createElement('div');
                 // need same class name for styling
                 listing.className = 'results-item';
+                listing.style.cursor = 'pointer';
 
-                // find the rating from the productRatings dict
-                const rating = productRatings[product.listing_id];
-                const ratingText = rating ? `${rating}` : '';
+                listing.addEventListener('click', () => {
+                    const productTitleSlug = product.title.replace(/\s+/g, '-');
+                    window.location.href = `/listing/${productTitleSlug}`;;
+                });
+
 
                 // sets all the html dynamically for each product
                 listing.innerHTML =
@@ -388,10 +390,7 @@
                     <div class="product-info">
                         <div class="product-title">${product.title}</div>
                         <div class="product-description">${product.description}</div>
-                    </div>
-
-                    <!-- product rating -->
-                    <div class="product-rating">${ratingText}</div>`
+                    </div>`
                 ;
                 // add the product listing to the container
                 container.appendChild(listing);
@@ -418,10 +417,7 @@
                 <div class="product-info">
                     <div class="product-title">${product.title}</div>
                     <div class="product-description">${product.description}</div>
-                </div>
-
-                <!-- product rating -->
-                <div class="product-rating">Rating: ${product.rating}</div>`
+                </div>`
             ;
             // add the product listing to the container
             container.appendChild(listing);
