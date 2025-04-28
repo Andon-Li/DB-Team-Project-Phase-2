@@ -12,11 +12,14 @@
         <p><strong>Price: </strong> ${{ listing['price'] }}</p>
         <p><strong>Category: </strong> {{ listing['category'] }}</p>
 
+        {% if account_type.lower() == 'buyer' %}
         <form method="POST">
             <label for="orderQuantity"></label>
             <input name="orderQuantity" type="number">
             <button>Add to Cart</button>
         </form>
+        {% endif %}
+
         <hr>
         {% if reviews %}
             {% for review in reviews %}

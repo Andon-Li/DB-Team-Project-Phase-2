@@ -284,7 +284,8 @@ def listing_detail(listing_id):
         listing = find_listing_by_id(listing_id)
         if listing:
             reviews = get_reviews('listing', listing_id)
-            return render_template('listing_detail.html', listing=listing, reviews=reviews)
+            account_type = find_account_type(session['email']) if 'email' in session else 'anonymous'
+            return render_template('listing_detail.html', listing=listing, reviews=reviews, account_type=account_type)
         else:
             return render_template('error.html', errorMessage="Product not found."), 404
     
