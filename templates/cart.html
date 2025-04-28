@@ -9,17 +9,19 @@
 <h3>Shopping Cart</h3>
 
 <div id="cart-contents">
-    {% if cartedListings %}
-        {% for listing in cartedListings %}
+    {% if listingsData %}
+        {% for listing in listingsData %}
             <div class="cart-listing">
                 <div class="order-details">
-                    <strong>Listing ID:</strong> {{ listing['Listing_ID'] }}<br>
-                    <strong>Product Name:</strong> {{ listing['Product_Name'] }}<br>
-                    <strong>Seller Email:</strong> {{ listing['Seller_Email'] }}<br>
-                    <strong>Quantity:</strong> {{ listing['Ordered_Quantity'] }}<br>
-                    <strong>Price Paid:</strong> ${{ listing['Price'] }}<br>
+                    <strong>Listing ID:</strong> {{ listing['id'] }}<br>
+                    <strong>Product Title:</strong> {{ listing['title'] }}<br>
+                    <strong>Product Name:</strong> {{ listing['name'] }}<br>
+                    <strong>Seller Email:</strong> {{ listing['sellerEmail'] }}<br>
+                    <strong>Quantity:</strong> {{ listing['quantity'] }}<br>
+                    <strong>Unit Price:</strong> ${{ listing['price'] }}<br>
                 </div>
             </div>
+            <hr>
         {% endfor %}
     {% else %}
     <p>No listings in your cart.</p>
@@ -28,12 +30,12 @@
 
 <div id="Summary">
     <p>Total Items: {{ quantityTotal }}</p>
-    <p>Total Price: ${{ totalPrice }}</p>
-    <p>Charging card: xxxx-xxxx-xxxx-{{ cardLast4}}</p>
+    <p>Total Price: ${{ priceTotal }}</p>
+    <p>Charging card: xxxx-xxxx-xxxx-{{ cardLast4 }}</p>
 
 </div>
 
-{% if carted_listings %}
+{% if listingsData %}
 <form method="POST" action="/cart">
     <button type="submit">Purchase Order</button>
 </form>

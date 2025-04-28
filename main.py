@@ -1,4 +1,4 @@
-from flask import Flask, render_template, session, request, redirect, url_for, g
+from flask import Flask, render_template, session, request, redirect, url_for, g, flash
 from collections import defaultdict
 import csv
 import sqlite3
@@ -292,7 +292,8 @@ def listing_detail(listing_id):
         qty = request.form['orderQuantity']
         query_db('''
             INSERT INTO cart VALUES (?, ?, ?)
-        ''', (session['email'], ))
+        ''', (session['email'], listing_id, qty), commit=True)
+        return redirect(url_for('search'))
         
 
 @app.route('/search', methods=['GET', 'POST'])
@@ -623,19 +624,67 @@ def order():
 
 
 
-@app.route('/cart')
+@app.route('/cart', methods=['GET', 'POST'])
 def cart():
     if 'email' not in session:
         return redirect(url_for('login'))
     
     if find_account_type(session['email']) != 'buyer':
         return redirect(url_for('profile'))
+
     
-    carted_listings = query_db('''
+    cart = query_db('''
         SELECT * FROM cart WHERE buyerEmail=?
     ''', (session['email'],))
-    print(carted_listings)
-    return render_template('cart.html', cartedListings=carted_listings)
+
+    listings_data = []
+    quantity_total = 0
+    listing_ids = []
+
+    for listing in cart:
+        quantity_total += listing['quantity']
+        listing_ids.append(listing['listingId'])
+        listings_data.append({'id': listing['listingId'], 'quantity': listing['quantity']})
+
+
+    for index, listing_id in enumerate(listing_ids):
+        row = query_db('''
+                SELECT * FROM listing WHERE id=?
+            ''', (listing_id,), one=True)
+        listings_data[index].update({'title': row['title'], 'name': row['name'], 'price': row['price'], 
+                                    'sellerEmail': row['sellerEmail']})
+
+    price_total = 0
+    for listing in listings_data:
+        price_total += (listing['price']*listing['quantity'])
+
+    card_last_4 = query_db('''
+        SELECT cardNum FROM buyer WHERE email=?
+    ''', (session['email'],), one=True)
+
+    if request.method == 'POST':
+        for listing in listings_data:
+            query_db('''
+                UPDATE bankInfo 
+                SET balance = balance + ?
+                WHERE accountNum = (
+                    SELECT bankAccountNum
+                    FROM seller    
+                    WHERE email = ?
+                )
+            ''', (str(listing['price']*listing['quantity']), listing['sellerEmail']))
+
+            query_db('''
+                INSERT INTO purchase (buyerEmail, listingId, quantity, totalPrice, activeStatus)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (session['email'], listing['id'], listing['quantity'], 
+                        (listing['price']*listing['quantity']), 1), commit=True)
+
+        return redirect(url_for('anon_profile'))
+    
+    if request.method == 'GET':
+        return render_template('cart.html', listingsData=listings_data, priceTotal=price_total,
+                            quantityTotal = quantity_total, cardLast4=card_last_4[0][-4:])
 
 @app.route('/error')
 def error():
