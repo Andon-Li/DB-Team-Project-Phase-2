@@ -770,8 +770,8 @@ def add_listing():
             return render_template('error.html', errorMessage="Quantity must be an integer and price must be a number.")
 
         query_db('''
-            INSERT INTO listing (name, title, description, quantity, price, category, sellerEmail)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO listing (name, title, description, quantity, price, category, sellerEmail, activeStatus)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 1)
         ''', (name, title, description, quantity, price, category, session['email']), commit=True)
 
         return redirect(url_for('search'))
