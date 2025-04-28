@@ -401,10 +401,10 @@ def load_user_data(email, account_type):
     return user_data
 
 # helper function to load all reviews
-def get_reviews(type, id):
+def get_reviews(entityType, entityId):
     reviews = []
 
-    if type == 'buyer':
+    if entityType == 'buyer':
         # Buyers: See reviews they have written
         rows = query_db('''
             SELECT listing.title AS product_name, review.rating, review.body
@@ -412,7 +412,7 @@ def get_reviews(type, id):
             JOIN purchase ON review.purchaseId = purchase.id
             JOIN listing ON purchase.listingId = listing.id
             WHERE purchase.buyerEmail = ?
-        ''', [id])
+        ''', [entityId])
 
         for row in rows:
             reviews.append({
@@ -421,7 +421,7 @@ def get_reviews(type, id):
                 'body': row['body'].strip() if row['body'] else ''
             })
 
-    elif type == 'seller':
+    elif entityType == 'seller':
         # Sellers: See reviews left on their products
         rows = query_db('''
             SELECT listing.title AS product_name, review.rating, review.body, purchase.buyerEmail AS buyer_email
@@ -429,7 +429,7 @@ def get_reviews(type, id):
             JOIN purchase ON review.purchaseId = purchase.id
             JOIN listing ON purchase.listingId = listing.id
             WHERE listing.sellerEmail = ?
-        ''', [id])
+        ''', [entityId])
 
         for row in rows:
             reviews.append({
@@ -439,7 +439,7 @@ def get_reviews(type, id):
                 'buyer_email': row['buyer_email'].strip() if row['buyer_email'] else ''
             })
 
-    elif accountType == 'listing':
+    elif entityType == 'listing':
         # used to get the ratings of specific listing pages
         rows = query_db('''
             SELECT review.rating, review.body, purchase.buyerEmail
