@@ -136,6 +136,9 @@
                         {% endif %}
                     </div>
                 </div>
+                {% if account_type == 'seller' %}
+                         <a href="{{ url_for('add_listing') }}" class="btn btn-success mt-3">Add New Listing</a>
+                {% endif %}
             {% endif %}
         </div>
     </div>
@@ -146,4 +149,3 @@
 <script>
 </script>
 {% endblock %}
-
