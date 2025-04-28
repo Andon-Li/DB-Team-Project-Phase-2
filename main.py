@@ -453,17 +453,17 @@ def edit_profile():
             bankAccountNum = request.form.get('bankAccountNum')
             query_db(
                 '''UPDATE seller SET street = ?, zipCode = ?, businessName = ?, csNum = ?, bankAccountNum = ? WHERE email = ?''',
-                [street, zipCode, businessName, csNum, bankAccountNum, email])
+                [street, zipCode, businessName, csNum, bankAccountNum, email], commit=True)
         elif account_type == 'buyer':
             print(f"Updating buyer data for {email}")
             cardNum = request.form.get('cardNum')
             query_db('''UPDATE buyer SET street = ?, zipCode = ?, businessName = ?, cardNum = ? WHERE email = ?''',
-                     [street, zipCode, businessName, cardNum, email])
+                     [street, zipCode, businessName, cardNum, email], commit=True)
         elif account_type == 'helpdesk':
             print(f"Updating helpdesk data for {email}")
             position = request.form.get('position')
             query_db('''UPDATE helpdesk SET position = ? WHERE email = ?''',
-                     [position, email])
+                     [position, email], commit=True)
 
         return redirect(url_for('profile', email=email))
 
