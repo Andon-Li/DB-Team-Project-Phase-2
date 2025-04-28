@@ -11,6 +11,12 @@
         <p><strong>Description: </strong> {{ product['description'] }}</p>
         <p><strong>Price: </strong> ${{ product['price'] }}</p>
         <p><strong>Category: </strong> {{ product['category'] }}</p>
+
+        <form method="POST">
+            <label for="orderQuantity"></label>
+            <input name="orderQuantity" type="number">
+            <button>Add to Cart</button>
+        </form>
         <hr>
         {% if reviews %}
             {% for review in reviews %}

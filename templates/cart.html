@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Cart{% endblock %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block body %}
+<h3>Shopping Cart</h3>
+
+<div id="cart-contents">
+    {% if cartedListings %}
+        {% for listing in cartedListings %}
+            <div class="cart-listing">
+                <div class="order-details">
+                    <strong>Listing ID:</strong> {{ listing['Listing_ID'] }}<br>
+                    <strong>Product Name:</strong> {{ listing['Product_Name'] }}<br>
+                    <strong>Seller Email:</strong> {{ listing['Seller_Email'] }}<br>
+                    <strong>Quantity:</strong> {{ listing['Ordered_Quantity'] }}<br>
+                    <strong>Price Paid:</strong> ${{ listing['Price'] }}<br>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+    <p>No listings in your cart.</p>
+    {% endif %}
+</div>
+
+<div id="Summary">
+    <p>Total Items: {{ quantityTotal }}</p>
+    <p>Total Price: ${{ totalPrice }}</p>
+    <p>Charging card: xxxx-xxxx-xxxx-{{ cardLast4}}</p>
+
+</div>
+
+{% if carted_listings %}
+<form method="POST" action="/cart">
+    <button type="submit">Purchase Order</button>
+</form>
+{% endif %}
+
+
+{% endblock %}
+
