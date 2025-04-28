@@ -267,6 +267,7 @@ with open('data/Product_Listings.csv', newline='') as f:
                 value = value.replace(',','')
 
             value = value.replace('?','')
+            value = value.replace('/',' ')
             value = value.strip()
 
             formatted_row[fieldname] = value

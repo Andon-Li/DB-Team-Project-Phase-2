@@ -230,18 +230,18 @@ def read_products():
     products = []
 
     # query all product listings from the db
-    rows = query_db('SELECT name, title, description, price, category FROM listing')
+    rows = query_db('SELECT id, name, title, description, price, category FROM listing')
     for row in rows:
         # append each product name, title, description, price, rating(hardcoded rn), and category to dictionary to return data
         products.append(
-            dict(name=row['name'].strip(), title=row['title'].strip(), description=row['description'].strip(),
+            dict(id=row['id'], name=row['name'].strip(), title=row['title'].strip(), description=row['description'].strip(),
                  price=row['price'], rating=5, category=row['category'].strip()))
     return products
 
 
-def find_product_by_title(title):
+def find_listing_by_id(listingId):
     # query straight from the listing table in the db
-    product = query_db('SELECT * FROM listing WHERE title = ?', [title], one=True)
+    product = query_db('SELECT * FROM listing WHERE id=?', (listingId,), one=True)
     return product
 
 
@@ -278,23 +278,25 @@ def get_all_subcategories(category_path, tree):
 
     return subcategories
 
-@app.route('/listing/<product_title>', methods=['GET', 'POST'])
-def listing_detail(product_title):
+@app.route('/listing/<listing_id>', methods=['GET', 'POST'])
+def listing_detail(listing_id):
     if request.method == 'GET':
-        product_title = product_title.replace('-', ' ')
-        product = find_product_by_title(product_title)
-        if product:
-            reviews = get_reviews('product', product_title)
-            return render_template('listing_detail.html', product=product, reviews=reviews)
+        listing = find_listing_by_id(listing_id)
+        if listing:
+            reviews = get_reviews('listing', listing_id)
+            return render_template('listing_detail.html', listing=listing, reviews=reviews)
         else:
             return render_template('error.html', errorMessage="Product not found."), 404
     
-    else:
-        pass
+    if request.method == 'POST':
+        qty = request.form['orderQuantity']
+        query_db('''
+            INSERT INTO cart VALUES (?, ?, ?)
+        ''', (session['email'], ))
+        
 
-@app.route('/search')
+@app.route('/search', methods=['GET', 'POST'])
 def search():
-
     # read the categories from the csv and make the tree based off of it
     categories = read_categories()
     category_tree = make_tree(categories)
@@ -439,14 +441,14 @@ def get_reviews(accountType, entityId):
                     'buyer_email': row['buyer_email'].strip() if row['buyer_email'] else ''
                 })
 
-    elif accountType == 'product':
-        # used to get the ratings of specific products for product listing pages
+    elif accountType == 'listing':
+        # used to get the ratings of specific listing pages
         rows = query_db('''
             SELECT review.rating, review.body, purchase.buyerEmail
             FROM review
             JOIN purchase ON review.purchaseId = purchase.id
             JOIN listing ON purchase.listingId = listing.id
-            WHERE listing.title = ?
+            WHERE listing.id = ?
         ''', [entityId])
 
         if rows:
