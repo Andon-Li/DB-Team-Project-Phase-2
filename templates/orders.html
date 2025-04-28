@@ -46,13 +46,14 @@
                     <div class="order-header">Order ID: {{ order['Order_ID'] }}</div>
                     <div class="order-details">
                         <strong>Listing ID:</strong> {{ order['Listing_ID'] }}<br>
+                        <strong>Product Name:</strong> {{ order['Product_Name'] }}<br>
                         {% if account_type == 'buyer' %}
                             <strong>Seller Email:</strong> {{ order['Seller_Email'] }}<br>
                         {% elif account_type == 'seller' %}
                             <strong>Buyer Email:</strong> {{ order['Buyer_Email'] }}<br>
                         {% endif %}
                         <strong>Quantity:</strong> {{ order['Quantity'] }}<br>
-                        <strong>Price Paid:</strong> ${{ order['Price_Paid'] }}<br>
+                        <strong>Price Paid:</strong> ${{ order['Price'] }}<br>
                         <strong>Order Date:</strong> {{ order['Order_Date'] }}
                     </div>
                 </div>
@@ -69,3 +70,4 @@
     // (no scripts needed here for now)
 </script>
 {% endblock %}
+

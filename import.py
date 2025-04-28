@@ -5,39 +5,50 @@ from hashlib import sha256
 connection = sqlite3.connect('nittanybusiness.db')
 cursor = connection.cursor()
 
-cursor.executescript('''
+cursor.execute('''
 CREATE TABLE IF NOT EXISTS user (
-    email           TEXT PRIMARY KEY,
+    email           TEXT NOT NULL PRIMARY KEY,
     passwordHash    TEXT NOT NULL
-);
+);''')
 
-CREATE TABLE IF NOT EXISTS helpDesk (
-    email       TEXT PRIMARY KEY,
-    Position    TEXT NOT NULL,
-    FOREIGN KEY (email) REFERENCES user(email)
-);
-
+cursor.execute('''
 CREATE TABLE IF NOT EXISTS cardInfo (
-    number  TEXT PRIMARY KEY,
+    number  TEXT NOT NULL PRIMARY KEY,
     type    TEXT NOT NULL,
     expDate TEXT NOT NULL,
     securityCode TEXT NOT NULL
-);
+);''')
 
+cursor.execute('''
 CREATE TABLE IF NOT EXISTS bankInfo (
-    accountNum  TEXT NOT NULL,
+    accountNum  TEXT NOT NULL PRIMARY KEY,
     routingNum  TEXT NOT NULL,
     balance     INTEGER NOT NULL
-);
+);''')
 
+cursor.execute('''
 CREATE TABLE IF NOT EXISTS zipInfo (
-    zipCode TEXT PRIMARY KEY,
+    zipCode TEXT NOT NULL PRIMARY KEY,
     city    TEXT NOT NULL,
     state   TEXT NOT NULL
-);
+);''')
 
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS helpDesk (
+    email       TEXT NOT NULL PRIMARY KEY,
+    Position    TEXT NOT NULL,
+    FOREIGN KEY (email) REFERENCES user(email)
+);''')
+
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS category (
+    name   TEXT NOT NULL PRIMARY KEY,
+    parent  TEXT NOT NULL
+);''')
+
+cursor.execute('''
 CREATE TABLE IF NOT EXISTS buyer (
-    email       TEXT PRIMARY KEY,
+    email       TEXT NOT NULL PRIMARY KEY,
     street      TEXT NOT NULL,
     zipCode     TEXT NOT NULL,
     businessName    TEXT NOT NULL,
@@ -46,10 +57,11 @@ CREATE TABLE IF NOT EXISTS buyer (
     FOREIGN KEY (email) REFERENCES user(email),
     FOREIGN KEY (cardNum) REFERENCES cardInfo(number),
     FOREIGN KEY (zipCode) REFERENCES zipInfo(zipCode)
-);
+);''')
 
+cursor.execute('''
 CREATE TABLE IF NOT EXISTS seller (
-    email       TEXT PRIMARY KEY,
+    email       TEXT NOT NULL PRIMARY KEY,
     street      TEXT NOT NULL,
     zipCode     TEXT NOT NULL,
     businessName    TEXT NOT NULL,
@@ -59,15 +71,11 @@ CREATE TABLE IF NOT EXISTS seller (
     FOREIGN KEY (bankAccountNum) REFERENCES bankInfo(accountNum),
     FOREIGN KEY (email) REFERENCES user(email),
     FOREIGN KEY (zipCode) REFERENCES zipInfo(zipCode)
-);
+);''')
 
-CREATE TABLE IF NOT EXISTS category (
-    name   TEXT PRIMARY KEY,
-    parent  TEXT NOT NULL
-);
-
+cursor.execute('''
 CREATE TABLE IF NOT EXISTS listing (
-    id          TEXT NOT NULL,
+    id          INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     sellerEmail TEXT NOT NULL,
     category    TEXT NOT NULL,
     title       TEXT NOT NULL,
@@ -75,9 +83,61 @@ CREATE TABLE IF NOT EXISTS listing (
     description     TEXT NOT NULL,
     quantity        INTEGER NOT NULL,
     price           REAL NOT NULL,
-    activeStatus    INTEGER NOT NULL
-);
-''')
+    activeStatus    INTEGER NOT NULL,
+    FOREIGN KEY (sellerEmail) REFERENCES seller(email),
+    FOREIGN KEY (category) REFERENCES category(name)
+);''')
+
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS rating (
+    authorEmail     TEXT NOT NULL,
+    recipientEmail  TEXT NOT NULL,
+    rating          REAL NOT NULL,
+    PRIMARY KEY (authorEmail, recipientEmail),
+    FOREIGN KEY (authorEmail) REFERENCES user(email),
+    FOREIGN KEY (recipientEmail) REFERENCES user(email)
+);''')
+
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS question (
+    listingId   INTEGER NOT NULL PRIMARY KEY,
+    buyerEmail  TEXT NOT NULL,
+    body        TEXT NOT NULL,
+    answer      TEXT NOT NULL,
+    FOREIGN KEY (listingId) REFERENCES listing(id),
+    FOREIGN KEY (buyerEmail) REFERENCES buyer(email)
+);''')
+
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS purchase (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    buyerEmail      TEXT NOT NULL,
+    listingId       TEXT NOT NULL,
+    quantity        INTEGER NOT NULL,
+    totalPrice           REAL NOT NULL,
+    date            DATE DEFAULT (DATE(CURRENT_TIMESTAMP)),
+    activeStatus    INTEGER NOT NULL,
+    FOREIGN KEY (buyerEmail) REFERENCES buyer(email),
+    FOREIGN KEY (listingId) REFERENCES listing(id)
+);''')
+
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS review (
+    purchaseId   TEXT NOT NULL PRIMARY KEY,
+    rating REAL NOT NULL,
+    body TEXT NOT NULL,
+    FOREIGN KEY (purchaseId) REFERENCES purchase(id)
+);''')
+
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS cart (
+    buyerEmail  TEXT NOT NULL,
+    listingId   TEXT NOT NULL,
+    quantity    INTEGER NOT NULL,
+    PRIMARY KEY (buyerEmail, listingId),
+    FOREIGN KEY (buyerEmail) REFERENCES buyer(email),
+    FOREIGN KEY (listingId) REFERENCES listing(id)
+);''')
 
 
 with open('./data/Users.csv', newline='') as f:
@@ -193,6 +253,7 @@ with open('data/Product_Listings.csv', newline='') as f:
     reader = csv.DictReader(f)
     reader.fieldnames[0] = reader.fieldnames[0].lstrip('\ufeff')
     for row in reader:
+        formatted_row = {}
         for fieldname in reader.fieldnames:
             value = row[fieldname]
 
@@ -202,18 +263,44 @@ with open('data/Product_Listings.csv', newline='') as f:
             value = value.replace('\"\"', '\"')
 
             if value.find('$') >= 0:
-                value = value.strip('$,')
+                value = value.strip('$')
+                value = value.replace(',','')
 
-            value = value.strip('?')
+            value = value.replace('?','')
             value = value.strip()
 
-            row[fieldname] = value
+            formatted_row[fieldname] = value
         
 
         cursor.execute('''
             INSERT INTO listing VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (row['Listing_ID'], row['Seller_Email'], row['Category'], row['Product_Title'], row['Product_Title'], 
-                row['Product_Description'], row['Quantity'], row['Product_Price'], 1))
+        ''', (formatted_row['Listing_ID'], formatted_row['Seller_Email'], formatted_row['Category'], formatted_row['Product_Title'], formatted_row['Product_Title'], 
+                formatted_row['Product_Description'], formatted_row['Quantity'], formatted_row['Product_Price'], 1))
+
+
+with open('data/Orders.csv', newline='') as f:
+    # Order_ID,Seller_Email,Listing_ID,Buyer_Email,Date,Quantity,Payment
+    reader = csv.DictReader(f)
+    reader.fieldnames[0] = reader.fieldnames[0].lstrip('\ufeff')
+
+    for row in reader:
+        date = row['Date'].replace('/', '-')
+        cursor.execute('''
+            INSERT INTO purchase (id, buyerEmail, listingId, quantity, totalPrice, date, activeStatus) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ''', (row['Order_ID'], row['Buyer_Email'], row['Listing_ID'], row['Quantity'], row['Payment'], date, 1))
+
+
+with open('data/Reviews.csv', newline='') as f:
+    # Order_ID,Rate, Review_Desc
+    reader = csv.DictReader(f)
+    reader.fieldnames[0] = reader.fieldnames[0].lstrip('\ufeff')
+    reader.fieldnames[2] = reader.fieldnames[2].strip()
+
+    for row in reader:
+        cursor.execute('''
+            INSERT INTO review VALUES (?, ?, ?)
+        ''', (row['Order_ID'], row['Rate'], row['Review_Desc']))
 
 
 
