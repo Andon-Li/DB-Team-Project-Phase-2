@@ -11,7 +11,25 @@
         <p><strong>Description: </strong> {{ product['description'] }}</p>
         <p><strong>Price: </strong> ${{ product['price'] }}</p>
         <p><strong>Category: </strong> {{ product['category'] }}</p>
-        <p><strong>Rating: </strong> {{ product['rating'] }}</p>
+        <hr>
+        {% if reviews %}
+            {% for review in reviews %}
+                <div class="mb-3">
+                    <p><strong>Rating:</strong>
+                        {% for i in range(review.rating | int) %}
+                            <span class="star">⭐</span>
+                        {% endfor %}
+                        ({{ review.rating | int }}/5)
+                    </p>
+                    <p><strong>Review:</strong> {{ review.body }}</p>
+                    <p><strong>Buyer:</strong> {{ review.buyer_email }}</p>
+                    <hr>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-muted">No reviews yet.</p>
+        {% endif %}
+
         <a href="/search" class="btn btn-primary mt-3">Back to Search</a>
     </div>
 {% endblock %}

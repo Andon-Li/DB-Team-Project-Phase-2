@@ -285,7 +285,8 @@ def listing_detail(product_title):
     product_title = product_title.replace('-', ' ')
     product = find_product_by_title(product_title)
     if product:
-        return render_template('listing_detail.html', product=product)
+        reviews = get_reviews('product', product_title)
+        return render_template('listing_detail.html', product=product, reviews=reviews)
     else:
         return render_template('error.html', errorMessage="Product not found."), 404
 
@@ -349,7 +350,6 @@ def find_account_type(email):
     # no account type is found
     return 'anonymous'
 
-
 # helper function to load all the user data for the profile pages
 def load_user_data(email, account_type):
     user_data = {}
@@ -396,6 +396,68 @@ def load_user_data(email, account_type):
 
     return user_data
 
+# helper function to load all reviews
+def get_reviews(type, id):
+    reviews = []
+
+    if type == 'buyer':
+        # Buyers: Can only see reviews they have written
+        rows = query_db('''
+                SELECT listing.title AS product_name, review.rating, review.body
+                FROM review
+                JOIN purchase ON review.purchaseId = purchase.id
+                JOIN listing ON purchase.listingId = listing.id
+                WHERE purchase.buyerEmail = ?
+        ''', [id])
+
+        if rows:
+            for row in rows:
+                reviews.append({
+                    'product_name': row['product_name'].strip() if row['product_name'] else '',
+                    'rating': row['rating'],
+                    'body': row['body'].strip() if row['body'] else ''
+                })
+
+    elif type == 'seller':
+        # Sellers: Can see reviews left on products they are selling and who left them
+        rows = query_db('''
+            SELECT listing.title AS product_name, review.rating, review.body, purchase.buyerEmail AS buyer_email
+            FROM review
+            JOIN purchase ON review.purchaseId = purchase.id
+            JOIN listing ON purchase.listingId = listing.id
+            WHERE listing.sellerEmail = ?
+        ''', [email])
+
+        if rows:
+            for row in rows:
+                reviews.append({
+                    'product_name': row['product_name'].strip() if row['product_name'] else '',
+                    'rating': row['rating'],
+                    'body': row['body'].strip() if row['body'] else '',
+                    'buyer_email': row['buyer_email'].strip() if row['buyer_email'] else ''
+                })
+
+    elif type == 'product':
+        # used to get the ratings of specific products for product listing pages
+        rows = query_db('''
+            SELECT review.rating, review.body, purchase.buyerEmail
+            FROM review
+            JOIN purchase ON review.purchaseId = purchase.id
+            JOIN listing ON purchase.listingId = listing.id
+            WHERE listing.title = ?
+        ''', [id])
+
+        if rows:
+            for row in rows:
+                reviews.append({
+                    'rating': row['rating'],
+                    'body': row['body'].strip() if row['body'] else '',
+                    'buyer_email': row['buyerEmail'].strip() if row['buyerEmail'] else ''
+                })
+
+    return reviews
+
+
 @app.route('/profile')
 def anon_profile():
     if 'email' not in session:
@@ -411,47 +473,7 @@ def profile(email):
 
     account_type = find_account_type(email)
     user_data = load_user_data(email, account_type)
-
-    reviews = []
-
-    if account_type == 'buyer':
-        # Buyers: Can only see reviews they have written
-        rows = query_db('''
-            SELECT listing.title AS product_name, review.rating, review.body
-            FROM review
-            JOIN purchase ON review.purchaseId = purchase.id
-            JOIN listing ON purchase.listingId = listing.id
-            WHERE purchase.buyerEmail = ?
-        ''', [email])
-
-        if rows:
-            for row in rows:
-                review = {
-                    'product_name': row['product_name'].strip() if row['product_name'] else '',
-                    'rating': row['rating'],
-                    'body': row['body'].strip() if row['body'] else ''
-                }
-                reviews.append(review)
-
-    elif account_type == 'seller':
-        # Sellers: Can see reviews left on products they are selling and who left them
-        rows = query_db('''
-            SELECT listing.title AS product_name, review.rating, review.body, purchase.buyerEmail AS buyer_email
-            FROM review
-            JOIN purchase ON review.purchaseId = purchase.id
-            JOIN listing ON purchase.listingId = listing.id
-            WHERE listing.sellerEmail = ?
-        ''', [email])
-
-        if rows:
-            for row in rows:
-                review = {
-                    'product_name': row['product_name'].strip() if row['product_name'] else '',
-                    'rating': row['rating'],
-                    'body': row['body'].strip() if row['body'] else '',
-                    'buyer_email': row['buyer_email'].strip() if row['buyer_email'] else ''
-                }
-                reviews.append(review)
+    reviews = get_reviews(account_type, email)
 
     return render_template('profile.html', email=email, user_data=user_data, account_type=account_type, reviews=reviews)
 
