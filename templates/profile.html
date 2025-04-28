@@ -118,7 +118,6 @@
                                     {% if account_type == 'seller' %}
                                         <p><strong>Buyer Email:</strong> {{ review.buyer_email }}</p>
                                     {% endif %}
-
                                     <p>
                                         <strong>Rating:</strong>
                                         {% for i in range(review.rating | int) %}
@@ -126,7 +125,6 @@
                                         {% endfor %}
                                         ({{ review.rating | int }}/5)
                                     </p>
-
                                     <p><strong>Review:</strong> {{ review.body }}</p>
                                     <hr>
                                 </div>
@@ -136,8 +134,27 @@
                         {% endif %}
                     </div>
                 </div>
-                {% if account_type == 'seller' %}
-                         <a href="{{ url_for('add_listing') }}" class="btn btn-success mt-3">Add New Listing</a>
+            {% endif %}
+
+            {% if account_type == 'seller' %}
+                <a href="{{ url_for('add_listing') }}" class="btn btn-success mt-3">Add New Listing</a>
+
+                {% if listings %}
+                    <h4 class="mt-4">Your Active Listings</h4>
+                    {% for listing in listings %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ listing['title'] }}</h5>
+                                <p class="card-text"><strong>Description:</strong> {{ listing['description'] }}</p>
+                                <p class="card-text"><strong>Price:</strong> ${{ '%.2f' % listing['price'] }}</p>
+                                <p class="card-text"><strong>Quantity:</strong> {{ listing['quantity'] }}</p>
+
+                                <form action="{{ url_for('delete_listing', listing_id=listing['id']) }}" method="POST" style="display: inline;">
+                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
                 {% endif %}
             {% endif %}
         </div>

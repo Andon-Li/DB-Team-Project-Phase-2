@@ -524,13 +524,19 @@ def profile(email):
     # Fetch reviews according to account type
     if account_type == 'buyer':
         reviews = get_reviews('buyer', email)
+        listings = None  # buyers don't have listings
     elif account_type == 'seller':
         reviews = get_reviews('seller', email)
+        listings = query_db('''
+                SELECT * FROM listing
+                WHERE sellerEmail = ? AND activeStatus = 1
+            ''', (email,))
     else:
         reviews = []
+        listings = None
 
-    return render_template('profile.html', email=email, user_data=user_data, account_type=account_type, reviews=reviews)
-
+    return render_template('profile.html', email=email, user_data=user_data,
+                           account_type=account_type, reviews=reviews, listings=listings)
 
 
 
@@ -798,6 +804,19 @@ def add_listing():
         return redirect(url_for('search'))
 
     return render_template('add_listing.html')
+
+@app.route('/delete_listing/<int:listing_id>', methods=['POST'])
+def delete_listing(listing_id):
+    if 'email' not in session or session['account_type'] != 'seller':
+        return redirect(url_for('login'))
+
+    query_db('''
+        UPDATE listing
+        SET activeStatus = 0
+        WHERE id = ? AND sellerEmail = ?
+    ''', (listing_id, session['email']), commit=True)
+
+    return redirect(url_for('profile', email=session['email']))
 @app.route('/error')
 def error():
     return render_template('error.html', errorMessage=request.args.get('errorMessage'))
