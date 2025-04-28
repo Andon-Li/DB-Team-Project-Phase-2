@@ -713,6 +713,18 @@ def cart():
         return render_template('cart.html', listingsData=listings_data, priceTotal=price_total,
                             quantityTotal = quantity_total, cardLast4=card_last_4[0][-4:])
 
+
+@app.route('/remove_from_cart', methods=['POST'])
+def remove_from_cart():
+    listingId = request.form['listingId']
+    query_db('''
+       DELETE FROM cart
+       WHERE buyerEmail = ? AND listingId = ? 
+    ''', (session['email'], listingId), commit=True)
+    
+    return redirect(url_for('cart'))
+
+
 @app.route('/edit_listing/<int:listing_id>', methods=['GET', 'POST'])
 def edit_listing(listing_id):
     if 'email' not in session:
@@ -753,6 +765,39 @@ def edit_listing(listing_id):
 
     return render_template('edit_listing.html', listing=listing, account_type=account_type)
 
+@app.route('/add_listing', methods=['GET', 'POST'])
+def add_listing():
+    if 'email' not in session:
+        return redirect(url_for('login'))
+
+    if session['account_type'] != 'seller':
+        return render_template('error.html', errorMessage="Only sellers can add listings.")
+
+    if request.method == 'POST':
+        name = request.form.get('name')
+        title = request.form.get('title')
+        description = request.form.get('description')
+        quantity = request.form.get('quantity')
+        price = request.form.get('price')
+        category = request.form.get('category')
+
+        if not (name and title and description and quantity and price and category):
+            return render_template('error.html', errorMessage="All fields are required.")
+
+        try:
+            quantity = int(quantity)
+            price = float(price)
+        except ValueError:
+            return render_template('error.html', errorMessage="Quantity must be an integer and price must be a number.")
+
+        query_db('''
+            INSERT INTO listing (name, title, description, quantity, price, category, sellerEmail, activeStatus)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+        ''', (name, title, description, quantity, price, category, session['email']), commit=True)
+
+        return redirect(url_for('search'))
+
+    return render_template('add_listing.html')
 @app.route('/error')
 def error():
     return render_template('error.html', errorMessage=request.args.get('errorMessage'))
