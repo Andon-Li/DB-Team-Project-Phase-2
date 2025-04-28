@@ -26,7 +26,7 @@ def index():
 def signup():
     if request.method == 'GET':
         return render_template('signup.html')
-    assert(request.method == 'POST')
+    assert (request.method == 'POST')
 
     inputs = request.form
 
@@ -38,9 +38,9 @@ def signup():
 
     if non_unique_fields or malformed_fields:
         return render_template('signup.html', nonUniqueFields=non_unique_fields, malformedFields=malformed_fields)
-    
+
     # After this point, all inputs are valid.
-    
+
     passwordHash = sha256(bytes(inputs['password'], 'utf-8')).hexdigest()
     query_db('''
                 INSERT INTO user VALUES (?, ?);
@@ -52,32 +52,32 @@ def signup():
 
             query_db('''
                 INSERT INTO seller VALUES (?, ?, ?, ?, ?, ?, ?);
-            ''', (inputs['email'], inputs['addressStreet'], inputs['addressZip'], 
-                    inputs['businessName'], 1, f'{csN[:3]}-{csN[3:6]}-{csN[6:]}', inputs['bankAccountNum']), commit=True)
+            ''', (inputs['email'], inputs['addressStreet'], inputs['addressZip'],
+                  inputs['businessName'], 1, f'{csN[:3]}-{csN[3:6]}-{csN[6:]}', inputs['bankAccountNum']), commit=True)
 
             query_db('''
                 INSERT INTO zipInfo VALUES (?, ?, ?)
             ''', (inputs['addressZip'], inputs['addressCity'], inputs['addressState']), commit=True)
 
             bRN = inputs['bankRoutingNum']
-            
+
             query_db('''
                 INSERT INTO bankInfo VALUES (?, ?, ?);
             ''', (inputs['bankAccountNum'], f'{bRN[:4]}-{bRN[4:8]}-{bRN[8]}', inputs['bankBalance']), commit=True)
-        
+
         case 'buyer':
             cN = inputs['cardNum']
 
             query_db('''
                 INSERT INTO buyer VALUES (?, ?, ?, ?, ?, ?);
-            ''', (inputs['email'], inputs['addressStreet'], inputs['addressZip'], 
-                    inputs['businessName'], 1, f'{cN[:4]}-{cN[4:8]}-{cN[8:12]}-{cN[12:]}'), commit=True)
-            
+            ''', (inputs['email'], inputs['addressStreet'], inputs['addressZip'],
+                  inputs['businessName'], 1, f'{cN[:4]}-{cN[4:8]}-{cN[8:12]}-{cN[12:]}'), commit=True)
+
             query_db('''
                 INSERT INTO cardInfo VALUES (?, ?, ?, ?);
-            ''', (f'{cN[:4]}-{cN[4:8]}-{cN[8:12]}-{cN[12:]}', inputs['cardType'], 
-                    f'{inputs['cardExpMonth']}-{inputs['cardExpYear']}', 
-                    inputs['cardSecurityCode']), commit=True)
+            ''', (f'{cN[:4]}-{cN[4:8]}-{cN[8:12]}-{cN[12:]}', inputs['cardType'],
+                  f'{inputs['cardExpMonth']}-{inputs['cardExpYear']}',
+                  inputs['cardSecurityCode']), commit=True)
 
             query_db('''
                 INSERT INTO zipInfo VALUES (?, ?, ?)
@@ -90,14 +90,14 @@ def signup():
 
     return redirect(url_for('login'))
 
-def unique_check(inputs):
 
+def unique_check(inputs):
     non_unique_fields = []
     if query_db('''
             SELECT 1 FROM user WHERE email=?;
             ''', (inputs['email'],), one=True):
         non_unique_fields.append('Email')
-    
+
     if inputs['accountType'] == 'seller' and query_db('''
             SELECT 1 FROM bankInfo WHERE accountNum=?;
             ''', (inputs['bankAccountNum'],), one=True):
@@ -105,18 +105,19 @@ def unique_check(inputs):
 
     if inputs['accountType'] == 'buyer' and query_db('''
             SELECT 1 FROM cardInfo WHERE number=?;
-            ''', (f'{inputs['cardNum'][:4]}-{inputs['cardNum'][4:8]}-{inputs['cardNum'][8:12]}-{inputs['cardNum'][12:]}',), one=True):
+            ''', (
+    f'{inputs['cardNum'][:4]}-{inputs['cardNum'][4:8]}-{inputs['cardNum'][8:12]}-{inputs['cardNum'][12:]}',), one=True):
         non_unique_fields.append('Card Number')
-    
+
     return non_unique_fields
 
-def format_check(inputs):
 
+def format_check(inputs):
     malformed_fields = []
 
     if not re.fullmatch('([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(.[A-Z|a-z]{2,})+', inputs['email']):
         malformed_fields.append('Email')
-    
+
     if not re.fullmatch('^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.*[0-9]).{8,60}$', inputs['password']):
         malformed_fields.append('Password')
 
@@ -146,17 +147,16 @@ def format_check(inputs):
 
             if not re.fullmatch('^[0-9]{2,4}$', inputs['cardSecurityCode']):
                 malformed_fields.append('Card Security Code')
-    
+
     return malformed_fields
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-
     # if its a GET request then show the login form
     if request.method == 'GET':
         return render_template('login.html')
-    assert(request.method == 'POST')
+    assert (request.method == 'POST')
 
     print(request.form)
     email = request.form['email']
@@ -179,6 +179,7 @@ def login():
         print(error_message)
         return render_template('login.html', errorMessage=error_message)
 
+
 def valid_user(email, password):
     hashed_password = sha256(bytes(password, 'utf-8')).hexdigest()
     if query_db('''
@@ -187,6 +188,7 @@ def valid_user(email, password):
         return True
     return False
 
+
 @app.route('/logout', methods=['POST', 'GET'])
 def logout():
     # checks if email is in session, if is then pop (remove from session) which logs out
@@ -194,6 +196,7 @@ def logout():
         session.pop('email', None)
         print('Logged out')
     return redirect(url_for('login'))
+
 
 # helper function to read the categories for creation of tree
 def read_categories():
@@ -207,6 +210,7 @@ def read_categories():
         categories.append(
             dict(category_name=row['name'].strip(), parent_category=row['parent'].strip()))
     return categories
+
 
 # function to create the category tree hierarchy
 def make_tree(categories, parent="Root"):
@@ -223,6 +227,7 @@ def make_tree(categories, parent="Root"):
     # at the end, return the tree
     return tree
 
+
 def read_products():
     products = []
 
@@ -230,9 +235,11 @@ def read_products():
     rows = query_db('SELECT name, title, description, price, category FROM listing')
     for row in rows:
         # append each product name, title, description, price, rating(hardcoded rn), and category to dictionary to return data
-        products.append(dict(name=row['name'].strip(), title=row['title'].strip(), description=row['description'].strip(),
-                             price=row['price'], rating=5, category=row['category'].strip()))
+        products.append(
+            dict(name=row['name'].strip(), title=row['title'].strip(), description=row['description'].strip(),
+                 price=row['price'], rating=5, category=row['category'].strip()))
     return products
+
 
 def get_all_subcategories(category_path, tree):
     subcategories = []
@@ -266,6 +273,7 @@ def get_all_subcategories(category_path, tree):
     get_subcategories(current, keys[-1])
 
     return subcategories
+
 
 def load_listings_ratings():
     listings = []
@@ -311,6 +319,7 @@ def load_listings_ratings():
 
     return listing_ratings
 
+
 @app.route('/search')
 def search():
     # implement this when signup is complete
@@ -344,13 +353,19 @@ def search():
         print(f"All subcategories for {selected_category}: {all_subcategories}")
 
         # filter the products based on the category and its subcategories
-        filtered_products = [product for product in products if any(subcategory in all_subcategories for subcategory in product['category'].split(','))]
+        filtered_products = [product for product in products if
+                             any(subcategory in all_subcategories for subcategory in product['category'].split(','))]
 
     # implement functionality for searching for an item
     if search_query:
-        filtered_products = [product for product in filtered_products if search_query in product['title'].lower() or search_query in product['description'].lower() or search_query in product['category'].lower()]
+        filtered_products = [product for product in filtered_products if
+                             search_query in product['title'].lower() or search_query in product[
+                                 'description'].lower() or search_query in product['category'].lower()]
 
-    return render_template('search.html', category_tree=category_tree, products=filtered_products, selected_category=selected_category, search_query=search_query, listing_ratings=listing_ratings)
+    return render_template('search.html', category_tree=category_tree, products=filtered_products,
+                           selected_category=selected_category, search_query=search_query,
+                           listing_ratings=listing_ratings)
+
 
 # helper function to help find the account type of the user based on the email
 def find_account_type(email):
@@ -371,6 +386,7 @@ def find_account_type(email):
 
     # no account type is found
     return 'anonymous'
+
 
 # helper function to load all the user data for the profile pages
 def load_user_data(email, account_type):
@@ -418,12 +434,14 @@ def load_user_data(email, account_type):
 
     return user_data
 
+
 @app.route('/profile')
 def anon_profile():
     if 'email' not in session:
         return redirect(url_for('login'))
 
     return redirect(url_for('profile', email=session['email']))
+
 
 @app.route('/profile/<email>', methods=['GET', 'POST'])
 def profile(email):
@@ -433,7 +451,50 @@ def profile(email):
     account_type = find_account_type(email)
     user_data = load_user_data(email, account_type)
 
-    return render_template('profile.html', email=email, user_data=user_data, account_type=account_type)
+    reviews = []
+
+    if account_type == 'buyer':
+        # Buyers: Can only see reviews they have written
+        rows = query_db('''
+            SELECT listing.title AS product_name, review.rating, review.body
+            FROM review
+            JOIN purchase ON review.purchaseId = purchase.id
+            JOIN listing ON purchase.listingId = listing.id
+            WHERE purchase.buyerEmail = ?
+        ''', [email])
+
+        if rows:
+            for row in rows:
+                review = {
+                    'product_name': row['product_name'].strip() if row['product_name'] else '',
+                    'rating': row['rating'],
+                    'body': row['body'].strip() if row['body'] else ''
+                }
+                reviews.append(review)
+
+    elif account_type == 'seller':
+        # Sellers: Can see reviews left on products they are selling and who left them
+        rows = query_db('''
+            SELECT listing.title AS product_name, review.rating, review.body, purchase.buyerEmail AS buyer_email
+            FROM review
+            JOIN purchase ON review.purchaseId = purchase.id
+            JOIN listing ON purchase.listingId = listing.id
+            WHERE listing.sellerEmail = ?
+        ''', [email])
+
+        if rows:
+            for row in rows:
+                review = {
+                    'product_name': row['product_name'].strip() if row['product_name'] else '',
+                    'rating': row['rating'],
+                    'body': row['body'].strip() if row['body'] else '',
+                    'buyer_email': row['buyer_email'].strip() if row['buyer_email'] else ''
+                }
+                reviews.append(review)
+
+    return render_template('profile.html', email=email, user_data=user_data, account_type=account_type, reviews=reviews)
+
+
 
 @app.route('/edit_profile', methods=['GET', 'POST'])
 def edit_profile():
@@ -482,6 +543,7 @@ def edit_profile():
     # otherwise its a GET request so load the user data and return the page
     user_data = load_user_data(email, account_type)
     return render_template('edit_profile.html', user_data=user_data, account_type=account_type)
+
 
 @app.route('/order')
 def order():
@@ -536,11 +598,9 @@ def order():
     return render_template('orders.html', orders=orders, account_type=account_type)
 
 
-
 @app.route('/error')
 def error():
     return render_template('error.html', errorMessage=request.args.get('errorMessage'))
-
 
 
 # Helper functions for simpler DB querying

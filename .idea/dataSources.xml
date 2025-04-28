@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="nittanybusiness" uuid="563782de-a217-4336-8324-8e7b9cfcaecc">
+    <data-source source="LOCAL" name="nittanybusiness" uuid="6dbdf2d9-2616-48e1-86ad-18ec207af9cb">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
-      <jdbc-url>jdbc:sqlite:C:\Users\power\PycharmProjects\DB-Team-Project-Phase-2\nittanybusiness.db</jdbc-url>
+      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/nittanybusiness.db</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
       <libraries>
         <library>
