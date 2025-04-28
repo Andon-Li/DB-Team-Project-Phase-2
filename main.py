@@ -457,6 +457,27 @@ def get_reviews(type, id):
 
     return reviews
 
+@app.route('/submit_review', methods=['POST'])
+def submit_review():
+    if 'email' not in session:
+        return redirect(url_for('login'))
+
+    purchase_id = request.form.get('purchaseId')
+    rating = request.form.get('rating')
+    body = request.form.get('body')
+
+    # Check if this purchase has already been reviewed
+    existing_review = query_db('SELECT * FROM review WHERE purchaseId = ?', [purchase_id], one=True)
+
+    if existing_review:
+        return redirect(url_for('order'))  # Or you can redirect to an error page if you prefer
+
+    # Insert new review into the database
+    query_db('INSERT INTO review (purchaseId, rating, body) VALUES (?, ?, ?)',
+             [purchase_id, rating, body], commit=True)
+
+    return redirect(url_for('order'))
+
 
 @app.route('/profile')
 def anon_profile():
