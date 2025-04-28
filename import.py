@@ -253,6 +253,7 @@ with open('data/Product_Listings.csv', newline='') as f:
     reader = csv.DictReader(f)
     reader.fieldnames[0] = reader.fieldnames[0].lstrip('\ufeff')
     for row in reader:
+        formatted_row = {}
         for fieldname in reader.fieldnames:
             value = row[fieldname]
 
@@ -265,16 +266,16 @@ with open('data/Product_Listings.csv', newline='') as f:
                 value = value.strip('$')
                 value = value.replace(',','')
 
-            value = value.strip('?')
+            value = value.replace('?','')
             value = value.strip()
 
-            row[fieldname] = value
+            formatted_row[fieldname] = value
         
 
         cursor.execute('''
             INSERT INTO listing VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (row['Listing_ID'], row['Seller_Email'], row['Category'], row['Product_Title'], row['Product_Title'], 
-                row['Product_Description'], row['Quantity'], row['Product_Price'], 1))
+        ''', (formatted_row['Listing_ID'], formatted_row['Seller_Email'], formatted_row['Category'], formatted_row['Product_Title'], formatted_row['Product_Title'], 
+                formatted_row['Product_Description'], formatted_row['Quantity'], formatted_row['Product_Price'], 1))
 
 
 with open('data/Orders.csv', newline='') as f:
@@ -283,10 +284,11 @@ with open('data/Orders.csv', newline='') as f:
     reader.fieldnames[0] = reader.fieldnames[0].lstrip('\ufeff')
 
     for row in reader:
+        date = row['Date'].replace('/', '-')
         cursor.execute('''
-            INSERT INTO purchase (id, buyerEmail, listingId, quantity, totalPrice, activeStatus) 
-            VALUES (?, ?, ?, ?, ?, ?)
-        ''', (row['Order_ID'], row['Buyer_Email'], row['Listing_ID'], row['Quantity'], row['Payment'], 1))
+            INSERT INTO purchase (id, buyerEmail, listingId, quantity, totalPrice, date, activeStatus) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ''', (row['Order_ID'], row['Buyer_Email'], row['Listing_ID'], row['Quantity'], row['Payment'], date, 1))
 
 
 with open('data/Reviews.csv', newline='') as f:
