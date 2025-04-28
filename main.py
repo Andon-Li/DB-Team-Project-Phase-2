@@ -1,3 +1,5 @@
+import email
+
 from flask import Flask, render_template, session, request, redirect, url_for, g
 from collections import defaultdict
 import csv
@@ -169,6 +171,7 @@ def login():
     if valid_user(email, password):
         print('Should direct to index')
         session['email'] = email
+        session['account_type'] = find_account_type(email)
         return redirect(url_for('index'))
     else:
         # the login credentials were invalid
@@ -422,7 +425,7 @@ def anon_profile():
 
     return redirect(url_for('profile', email=session['email']))
 
-@app.route('/profile/<email>')
+@app.route('/profile/<email>', methods=['GET', 'POST'])
 def profile(email):
     if 'email' not in session:
         return redirect(url_for('login'))
@@ -431,6 +434,42 @@ def profile(email):
     user_data = load_user_data(email, account_type)
 
     return render_template('profile.html', email=email, user_data=user_data, account_type=account_type)
+
+@app.route('/edit_profile', methods=['GET', 'POST'])
+def edit_profile():
+    if 'email' not in session:
+        return redirect(url_for('login'))
+
+    email = session['email']
+    account_type = session.get('account_type')
+
+    if request.method == 'POST':
+        street = request.form.get('street')
+        zipCode = request.form.get('zipCode')
+        businessName = request.form.get('businessName')
+        if account_type == 'seller':
+            print(f"Updating seller data for {email}")
+            csNum = request.form.get('csNum')
+            bankAccountNum = request.form.get('bankAccountNum')
+            query_db(
+                '''UPDATE seller SET street = ?, zipCode = ?, businessName = ?, csNum = ?, bankAccountNum = ? WHERE email = ?''',
+                [street, zipCode, businessName, csNum, bankAccountNum, email])
+        elif account_type == 'buyer':
+            print(f"Updating buyer data for {email}")
+            cardNum = request.form.get('cardNum')
+            query_db('''UPDATE buyer SET street = ?, zipCode = ?, businessName = ?, cardNum = ? WHERE email = ?''',
+                     [street, zipCode, businessName, cardNum, email])
+        elif account_type == 'helpdesk':
+            print(f"Updating helpdesk data for {email}")
+            position = request.form.get('position')
+            query_db('''UPDATE helpdesk SET position = ? WHERE email = ?''',
+                     [position, email])
+
+        return redirect(url_for('profile', email=email))
+
+    # otherwise its a GET request
+    user_data = load_user_data(email, account_type)
+    return render_template('edit_profile.html', user_data=user_data, account_type=account_type)
 
 @app.route('/order')
 def order():

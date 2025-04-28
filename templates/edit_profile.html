@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}Edit Profile{% endblock %}
+
+{% block head %}
+{% endblock %}
+
+{% block body %}
+    <form method="POST">
+        <h4>Edit Profile</h4>
+
+        <div class="mb-3">
+            <label>Email (cannot be changed)</label>
+            <input type="text" class="form-control" value="{{ user_data.email }}" disabled>
+        </div>
+
+        {% if account_type == "seller" or account_type == "buyer" %}
+            <div class="mb-3">
+                <label>Street</label>
+                <input type="text" class="form-control" name="street" value="{{ user_data.street }}">
+            </div>
+            <div class="mb-3">
+                <label>Zip Code</label>
+                <input type="text" class="form-control" name="zipCode" value="{{ user_data.zipCode }}">
+            </div>
+            <div class="mb-3">
+                <label>Business Name</label>
+                <input type="text" class="form-control" name="businessName" value="{{ user_data.businessName }}">
+            </div>
+        {% endif %}
+
+        {% if account_type == "seller" %}
+            <div class="mb-3">
+                <label>Phone</label>
+                <input type="text" class="form-control" name="csNum" value="{{ user_data.csNum }}">
+            </div>
+            <div class="mb-3">
+                <label>Bank Account</label>
+                <input type="text" class="form-control" name="bankAccountNum" value="{{ user_data.bankAccountNum }}">
+            </div>
+        {% elif account_type == "buyer" %}
+            <div class="mb-3">
+                <label>Card Number</label>
+                <input type="text" class="form-control" name="cardNum" value="{{ user_data.cardNum }}">
+            </div>
+        {% elif account_type == "helpdesk" %}
+            <div class="mb-3">
+                <label>Position</label>
+                <input type="text" class="form-control" name="position" value="{{ user_data.position }}">
+            </div>
+        {% endif %}
+
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <a class="btn btn-secondary" href="{{ url_for('profile', email=session['email']) }}">Cancel</a>
+    </form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+</script>
+{% endblock %}
