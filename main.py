@@ -562,7 +562,7 @@ def order():
     orders = []
 
     if account_type == 'buyer':
-        # fetch purchases and their listing info where the user is the buyer
+        # Fetch purchases and listing info where the user is the buyer
         rows = query_db('''
             SELECT purchase.id, purchase.listingId, listing.sellerEmail, listing.title, purchase.quantity, purchase.totalPrice, purchase.date
             FROM purchase
@@ -579,10 +579,15 @@ def order():
             order['Quantity'] = row['quantity']
             order['Price'] = row['totalPrice']
             order['Order_Date'] = row['date']
+
+            # Check if the order already has a review
+            review = query_db('SELECT 1 FROM review WHERE purchaseId = ?', [row['id']], one=True)
+            order['Reviewed'] = bool(review)
+
             orders.append(order)
 
     elif account_type == 'seller':
-        # fetch purchases and their listing info where the user is the seller
+        # Fetch purchases and listing info where the user is the seller
         rows = query_db('''
             SELECT purchase.id, purchase.listingId, purchase.buyerEmail, listing.title, purchase.quantity, purchase.totalPrice, purchase.date
             FROM purchase
@@ -599,9 +604,14 @@ def order():
             order['Quantity'] = row['quantity']
             order['Price'] = row['totalPrice']
             order['Order_Date'] = row['date']
+
+            # Sellers don't leave reviews, but we add 'Reviewed' field for consistency
+            order['Reviewed'] = True
+
             orders.append(order)
 
     return render_template('orders.html', orders=orders, account_type=account_type)
+
 
 
 @app.route('/cart')
