@@ -443,9 +443,9 @@ def order():
     orders = []
 
     if account_type == 'buyer':
-        # fetch all purchases and their corresponding listing info where user is buyer
+        # fetch purchases and their listing info where the user is the buyer
         rows = query_db('''
-            SELECT purchase.id, purchase.listingId, listing.sellerEmail, purchase.quantity, purchase.totalPrice, purchase.date
+            SELECT purchase.id, purchase.listingId, listing.sellerEmail, listing.title, purchase.quantity, purchase.totalPrice, purchase.date
             FROM purchase
             JOIN listing ON purchase.listingId = listing.id
             WHERE purchase.buyerEmail = ?
@@ -455,16 +455,17 @@ def order():
             order = {}
             order['Order_ID'] = row['id']
             order['Listing_ID'] = row['listingId']
+            order['Product_Name'] = row['title'].strip()
             order['Seller_Email'] = row['sellerEmail'].strip()
             order['Quantity'] = row['quantity']
-            order['Price_Paid'] = row['totalPrice']
+            order['Price'] = row['totalPrice']
             order['Order_Date'] = row['date']
             orders.append(order)
 
     elif account_type == 'seller':
-        # fetch all purchases and their corresponding buyer info where user is seller
+        # fetch purchases and their listing info where the user is the seller
         rows = query_db('''
-            SELECT purchase.id, purchase.listingId, purchase.buyerEmail, purchase.quantity, purchase.totalPrice, purchase.date
+            SELECT purchase.id, purchase.listingId, purchase.buyerEmail, listing.title, purchase.quantity, purchase.totalPrice, purchase.date
             FROM purchase
             JOIN listing ON purchase.listingId = listing.id
             WHERE listing.sellerEmail = ?
@@ -474,13 +475,15 @@ def order():
             order = {}
             order['Order_ID'] = row['id']
             order['Listing_ID'] = row['listingId']
+            order['Product_Name'] = row['title'].strip()
             order['Buyer_Email'] = row['buyerEmail'].strip()
             order['Quantity'] = row['quantity']
-            order['Price_Paid'] = row['totalPrice']
+            order['Price'] = row['totalPrice']
             order['Order_Date'] = row['date']
             orders.append(order)
 
     return render_template('orders.html', orders=orders, account_type=account_type)
+
 
 
 @app.route('/error')
