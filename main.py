@@ -441,17 +441,47 @@ def order():
     account_type = find_account_type(user_email)
 
     orders = []
-    with open('data/Orders.csv', 'r', newline='', encoding='utf-8') as csvfile:
-        reader = csv.DictReader(csvfile)
-        orders = list(reader)
 
-    filtered_orders = []
     if account_type == 'buyer':
-        filtered_orders = [order for order in orders if order['Buyer_Email'].strip() == user_email]
-    elif account_type == 'seller':
-        filtered_orders = [order for order in orders if order['Seller_Email'].strip() == user_email]
+        # fetch all purchases and their corresponding listing info where user is buyer
+        rows = query_db('''
+            SELECT purchase.id, purchase.listingId, listing.sellerEmail, purchase.quantity, purchase.totalPrice, purchase.date
+            FROM purchase
+            JOIN listing ON purchase.listingId = listing.id
+            WHERE purchase.buyerEmail = ?
+        ''', [user_email])
 
-    return render_template('orders.html', orders=filtered_orders, account_type=account_type)
+        for row in rows:
+            order = {}
+            order['Order_ID'] = row['id']
+            order['Listing_ID'] = row['listingId']
+            order['Seller_Email'] = row['sellerEmail'].strip()
+            order['Quantity'] = row['quantity']
+            order['Price_Paid'] = row['totalPrice']
+            order['Order_Date'] = row['date']
+            orders.append(order)
+
+    elif account_type == 'seller':
+        # fetch all purchases and their corresponding buyer info where user is seller
+        rows = query_db('''
+            SELECT purchase.id, purchase.listingId, purchase.buyerEmail, purchase.quantity, purchase.totalPrice, purchase.date
+            FROM purchase
+            JOIN listing ON purchase.listingId = listing.id
+            WHERE listing.sellerEmail = ?
+        ''', [user_email])
+
+        for row in rows:
+            order = {}
+            order['Order_ID'] = row['id']
+            order['Listing_ID'] = row['listingId']
+            order['Buyer_Email'] = row['buyerEmail'].strip()
+            order['Quantity'] = row['quantity']
+            order['Price_Paid'] = row['totalPrice']
+            order['Order_Date'] = row['date']
+            orders.append(order)
+
+    return render_template('orders.html', orders=orders, account_type=account_type)
+
 
 @app.route('/error')
 def error():
