@@ -687,6 +687,46 @@ def cart():
         return render_template('cart.html', listingsData=listings_data, priceTotal=price_total,
                             quantityTotal = quantity_total, cardLast4=card_last_4[0][-4:])
 
+@app.route('/edit_listing/<int:listing_id>', methods=['GET', 'POST'])
+def edit_listing(listing_id):
+    if 'email' not in session:
+        return redirect(url_for('login'))
+
+    account_type = session.get('account_type')
+    email = session.get('email')
+
+    listing = find_listing_by_id(listing_id)
+    if not listing:
+        return render_template('error.html', errorMessage="Listing not found.")
+
+    # Only allow helpdesk or seller who owns the listing
+    if account_type == 'seller' and listing['sellerEmail'] != email:
+        return render_template('error.html', errorMessage="Unauthorized to edit this listing.")
+
+    if request.method == 'POST':
+        name = request.form.get('name')
+        description = request.form.get('description')
+        quantity = request.form.get('quantity')
+        price = request.form.get('price')
+
+        if account_type == 'helpdesk':
+            category = request.form.get('category')
+            query_db('''
+                UPDATE listing
+                SET name=?, description=?, quantity=?, price=?, category=?
+                WHERE id=?
+            ''', [name, description, quantity, price, category, listing_id], commit=True)
+        else:
+            query_db('''
+                UPDATE listing
+                SET name=?, description=?, quantity=?, price=?
+                WHERE id=?
+            ''', [name, description, quantity, price, listing_id], commit=True)
+
+        return redirect(url_for('listing_detail', listing_id=listing_id))
+
+    return render_template('edit_listing.html', listing=listing, account_type=account_type)
+
 @app.route('/error')
 def error():
     return render_template('error.html', errorMessage=request.args.get('errorMessage'))

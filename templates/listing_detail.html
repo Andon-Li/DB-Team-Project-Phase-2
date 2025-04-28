@@ -7,20 +7,25 @@
 {% block body %}
     <div class="container mt-5">
         <h1>{{ listing['title'] }}</h1>
-        <p><strong>Listing Name: </strong> {{ listing['name'] }}</p>
-        <p><strong>Description: </strong> {{ listing['description'] }}</p>
-        <p><strong>Price: </strong> ${{ listing['price'] }}</p>
-        <p><strong>Category: </strong> {{ listing['category'] }}</p>
+        <p><strong>Listing Name:</strong> {{ listing['name'] }}</p>
+        <p><strong>Description:</strong> {{ listing['description'] }}</p>
+        <p><strong>Price:</strong> ${{ listing['price'] }}</p>
+        <p><strong>Category:</strong> {{ listing['category'] }}</p>
 
         {% if account_type.lower() == 'buyer' %}
         <form method="POST">
-            <label for="orderQuantity"></label>
-            <input name="orderQuantity" type="number">
-            <button>Add to Cart</button>
+            <label for="orderQuantity">Quantity:</label>
+            <input name="orderQuantity" type="number" min="1" required>
+            <button class="btn btn-success">Add to Cart</button>
         </form>
         {% endif %}
 
+        {% if account_type.lower() == 'seller' or account_type.lower() == 'helpdesk' %}
+            <a href="{{ url_for('edit_listing', listing_id=listing['id']) }}" class="btn btn-primary mt-3">Edit Listing</a>
+        {% endif %}
+
         <hr>
+
         {% if reviews %}
             {% for review in reviews %}
                 <div class="mb-3">
