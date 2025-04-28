@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS seller (
 
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS listing (
-    id          TEXT NOT NULL PRIMARY KEY,
+    id          INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     sellerEmail TEXT NOT NULL,
     category    TEXT NOT NULL,
     title       TEXT NOT NULL,
@@ -100,7 +100,7 @@ CREATE TABLE IF NOT EXISTS rating (
 
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS question (
-    listingId   INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    listingId   INTEGER NOT NULL PRIMARY KEY,
     buyerEmail  TEXT NOT NULL,
     body        TEXT NOT NULL,
     answer      TEXT NOT NULL,
@@ -114,7 +114,8 @@ CREATE TABLE IF NOT EXISTS purchase (
     buyerEmail      TEXT NOT NULL,
     listingId       TEXT NOT NULL,
     quantity        INTEGER NOT NULL,
-    unitPrice       REAL NOT NULL,
+    totalPrice           REAL NOT NULL,
+    date            DATE DEFAULT (DATE(CURRENT_TIMESTAMP)),
     activeStatus    INTEGER NOT NULL,
     FOREIGN KEY (buyerEmail) REFERENCES buyer(email),
     FOREIGN KEY (listingId) REFERENCES listing(id)
@@ -123,8 +124,8 @@ CREATE TABLE IF NOT EXISTS purchase (
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS review (
     purchaseId   TEXT NOT NULL PRIMARY KEY,
-    body TEXT NOT NULL,
     rating REAL NOT NULL,
+    body TEXT NOT NULL,
     FOREIGN KEY (purchaseId) REFERENCES purchase(id)
 );''')
 
@@ -261,7 +262,8 @@ with open('data/Product_Listings.csv', newline='') as f:
             value = value.replace('\"\"', '\"')
 
             if value.find('$') >= 0:
-                value = value.strip('$,')
+                value = value.strip('$')
+                value = value.replace(',','')
 
             value = value.strip('?')
             value = value.strip()
@@ -274,14 +276,30 @@ with open('data/Product_Listings.csv', newline='') as f:
         ''', (row['Listing_ID'], row['Seller_Email'], row['Category'], row['Product_Title'], row['Product_Title'], 
                 row['Product_Description'], row['Quantity'], row['Product_Price'], 1))
 
+
 with open('data/Orders.csv', newline='') as f:
+    # Order_ID,Seller_Email,Listing_ID,Buyer_Email,Date,Quantity,Payment
     reader = csv.DictReader(f)
     reader.fieldnames[0] = reader.fieldnames[0].lstrip('\ufeff')
 
     for row in reader:
         cursor.execute('''
-        
-        ''')
+            INSERT INTO purchase (id, buyerEmail, listingId, quantity, totalPrice, activeStatus) 
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (row['Order_ID'], row['Buyer_Email'], row['Listing_ID'], row['Quantity'], row['Payment'], 1))
+
+
+with open('data/Reviews.csv', newline='') as f:
+    # Order_ID,Rate, Review_Desc
+    reader = csv.DictReader(f)
+    reader.fieldnames[0] = reader.fieldnames[0].lstrip('\ufeff')
+    reader.fieldnames[2] = reader.fieldnames[2].strip()
+
+    for row in reader:
+        cursor.execute('''
+            INSERT INTO review VALUES (?, ?, ?)
+        ''', (row['Order_ID'], row['Rate'], row['Review_Desc']))
+
 
 
 
