@@ -278,6 +278,9 @@ def get_all_subcategories(category_path, tree):
 
     return subcategories
 
+def get_questions_from_listing(listing_id):
+    return query_db('SELECT * FROM question WHERE listingId = ?', (listing_id,))
+
 @app.route('/listing/<listing_id>', methods=['GET', 'POST'])
 def listing_detail(listing_id):
     if request.method == 'GET':
@@ -285,16 +288,34 @@ def listing_detail(listing_id):
         if listing:
             reviews = get_reviews('listing', listing_id)
             account_type = find_account_type(session['email']) if 'email' in session else 'anonymous'
-            return render_template('listing_detail.html', listing=listing, reviews=reviews, account_type=account_type)
+            questions = get_questions_from_listing(listing_id)
+            return render_template('listing_detail.html', listing=listing, reviews=reviews, account_type=account_type, questions=questions)
         else:
             return render_template('error.html', errorMessage="Product not found."), 404
     
     if request.method == 'POST':
-        qty = request.form['orderQuantity']
-        query_db('''
-            INSERT INTO cart VALUES (?, ?, ?)
-        ''', (session['email'], listing_id, qty), commit=True)
-        return redirect(url_for('search'))
+        if 'orderQuantity' in request.form:
+            qty = request.form['orderQuantity']
+            query_db('''
+                INSERT INTO cart VALUES (?, ?, ?)
+            ''', (session['email'], listing_id, qty), commit=True)
+            return redirect(url_for('search'))
+        elif 'question_body' in request.form:
+            question_body = request.form['question_body']
+            query_db('''
+                INSERT INTO question (listingId, buyerEmail, body, answer) VALUES (?, ?, ?, ?)
+            ''', (listing_id, session['email'], question_body, ""), commit=True)
+            return redirect(url_for('listing_detail', listing_id=listing_id))
+        elif 'answer_body' in request.form:
+            answer_body = request.form['answer_body']
+            question_id = request.form['question_id']
+            query_db('''
+                UPDATE question SET answer = ? WHERE listingId = ?
+            ''', (answer_body, question_id), commit=True)
+            return redirect(url_for('listing_detail', listing_id=listing_id))
+        else:
+            # if none of these are true then there has been an error
+            return render_template('error.html', errorMessage="Invalid form submission."), 400
         
 
 @app.route('/search', methods=['GET', 'POST'])

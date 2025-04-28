@@ -12,7 +12,6 @@
         <p><strong>Price:</strong> ${{ '%.2f' % listing['price'] }}</p>
         <p><strong>Quantity:</strong> {{ listing['quantity'] }}</p>
 
-
         {% if account_type.lower() == 'buyer' %}
         <form method="POST">
             <label for="orderQuantity">Quantity:</label>
@@ -46,6 +45,49 @@
             <p class="text-muted">No reviews yet.</p>
         {% endif %}
 
+        <hr>
+        <h3>Questions & Answers</h3>
+
+        {% if account_type.lower() == 'buyer' %}
+            <!-- form where buyers can ask questions for a product -->
+            <form method="POST" class="mb-4">
+                <div class="form-group">
+                    <label for="question_body">Ask a Question:</label>
+                    <textarea name="question_body" class="form-control" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary mt-2">Submit Question</button>
+            </form>
+        {% endif %}
+
+        {% if questions %}
+            {% for question in questions %}
+                <div class="mb-3">
+                    <div class="card-body">
+                        <p><strong>Buyer:</strong> {{ question['buyerEmail'] }}</p>
+                        <p><strong>Question:</strong> {{ question['body'] }}</p>
+
+                        <!-- If there is an answer -->
+                        {% if question['answer'] %}
+                            <p><strong>Answer:</strong> {{ question['answer'] }}</p>
+                        {% elif account_type.lower() == 'seller' and listing['sellerEmail'] == session['email'] %}
+                            <!-- form for sellers to respond to questions -->
+                            <form method="POST">
+                                <input type="hidden" name="question_id" value="{{ question['listingId'] }}">
+                                <div class="form-group">
+                                    <label for="answer_body">Your Answer:</label>
+                                    <textarea name="answer_body" class="form-control" required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary mt-2">Submit Answer</button>
+                            </form>
+                        {% else %}
+                            <p class="text-muted">Wait for the seller's response</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-muted">No reviews yet.</p>
+        {% endif %}
         <a href="/search" class="btn btn-primary mt-3">Back to Search</a>
     </div>
 {% endblock %}
